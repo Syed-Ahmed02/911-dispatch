@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from "react";
 import { INITIAL_CALLS, priorityWeight, randomLiveLine } from "./mock-data";
-import type { CallStatus, DispatchCall, EmergencyType } from "./types";
+import type { CallStatus, DispatchCall, EmergencyType, TranscriptLine } from "./types";
 
 interface DashboardMetrics {
   totalCallsToday: number;
@@ -99,14 +99,16 @@ export function DispatchProvider({ children }: { children: ReactNode }) {
             return call;
           }
 
+          const nextLine: TranscriptLine = {
+            id: `t-${Date.now()}`,
+            speaker: Math.random() > 0.6 ? "caller" : "dispatcher",
+            text: randomLiveLine(),
+            timestamp: Date.now(),
+          };
+
           const nextTranscript = [
             ...call.transcript,
-            {
-              id: `t-${Date.now()}`,
-              speaker: Math.random() > 0.6 ? "caller" : "dispatcher",
-              text: randomLiveLine(),
-              timestamp: Date.now(),
-            },
+            nextLine,
           ];
 
           return {
