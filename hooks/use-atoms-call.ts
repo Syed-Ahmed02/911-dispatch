@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { AtomsClient } from "atoms-client-sdk";
+import { useSpeechRecognition } from "./use-speech-recognition";
 
 export type CallStatus =
   | "idle"
@@ -24,6 +25,10 @@ export interface UseAtomsCallReturn {
   isAgentSpeaking: boolean;
   isMuted: boolean;
   transcript: TranscriptMessage[];
+  /** The caller's in-progress speech (not yet finalized) */
+  interimTranscript: string;
+  /** Whether the Web Speech API is supported in this browser */
+  isSpeechRecognitionSupported: boolean;
   startCall: () => Promise<void>;
   endCall: () => void;
   toggleMute: () => void;
@@ -56,6 +61,31 @@ export function useAtomsCall(): UseAtomsCallReturn {
     []
   );
 
+  // Speech recognition for capturing caller's spoken words
+  const {
+    isSupported: isSpeechRecognitionSupported,
+    interimTranscript,
+    start: startSpeechRecognition,
+    stop: stopSpeechRecognition,
+    setSuppressed: setSpeechSuppressed,
+  } = useSpeechRecognition({
+    onResult: (text) => {
+      addTranscript("caller", text);
+    },
+  });
+
+  // Refs for speech recognition functions so the Atoms event-listener
+  // useEffect doesn't depend on them (avoids tearing down listeners on
+  // every callback identity change).
+  const startSpeechRef = useRef(startSpeechRecognition);
+  const setSuppressedRef = useRef(setSpeechSuppressed);
+  useEffect(() => {
+    startSpeechRef.current = startSpeechRecognition;
+  }, [startSpeechRecognition]);
+  useEffect(() => {
+    setSuppressedRef.current = setSpeechSuppressed;
+  }, [setSpeechSuppressed]);
+
   const resetState = useCallback(() => {
     setStatus("idle");
     setStatusMessage("Ready");
@@ -64,7 +94,7 @@ export function useAtomsCall(): UseAtomsCallReturn {
     setError(null);
   }, []);
 
-  // Set up event listeners
+  // Set up Atoms event listeners
   useEffect(() => {
     client.removeAllListeners();
 
@@ -83,20 +113,44 @@ export function useAtomsCall(): UseAtomsCallReturn {
     client.on("agent_connected", () => {
       setStatus("active");
       setStatusMessage("Dispatcher connected");
+      // Start speech recognition only after the WebRTC session is fully
+      // established, so both the Atoms SDK and Web Speech API don't race
+      // for microphone access during connection setup.
+      startSpeechRef.current();
     });
 
     client.on("agent_start_talking", () => {
       setIsAgentSpeaking(true);
       setStatusMessage("Dispatcher speaking...");
+      // Suppress speech recognition so mic bleed-through from speakers
+      // is not transcribed as caller speech
+      setSuppressedRef.current(true);
     });
 
     client.on("agent_stop_talking", () => {
       setIsAgentSpeaking(false);
       setStatusMessage("Listening...");
+      setSuppressedRef.current(false);
     });
 
-    client.on("transcript", (data: { text: string }) => {
-      addTranscript("dispatcher", data.text);
+    client.on(
+      "transcript",
+      (data: { text?: string; topic?: string; type?: string }) => {
+        // The atoms-client-sdk hardcodes topic to "agent_response" for all
+        // transcript events received via the data channel.
+        const text = data.text?.trim();
+        if (text) {
+          addTranscript("dispatcher", text);
+        }
+      }
+    );
+
+    // Some Atoms server versions send agent text via the "update" event
+    // instead of (or in addition to) "transcript".
+    client.on("update", (data: Record<string, unknown>) => {
+      if (typeof data.text === "string" && data.text.trim()) {
+        addTranscript("dispatcher", data.text.trim());
+      }
     });
 
     client.on("microphone_permission_granted", () => {
@@ -168,13 +222,14 @@ export function useAtomsCall(): UseAtomsCallReturn {
   }, [client]);
 
   const endCall = useCallback(() => {
+    stopSpeechRecognition();
     try {
       client.stopSession();
     } catch {
       // Session may already be stopped
     }
     resetState();
-  }, [client, resetState]);
+  }, [client, resetState, stopSpeechRecognition]);
 
   const toggleMute = useCallback(() => {
     if (isMuted) {
@@ -192,6 +247,8 @@ export function useAtomsCall(): UseAtomsCallReturn {
     isAgentSpeaking,
     isMuted,
     transcript,
+    interimTranscript,
+    isSpeechRecognitionSupported,
     startCall,
     endCall,
     toggleMute,
