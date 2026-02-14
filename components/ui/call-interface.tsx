@@ -281,7 +281,7 @@ export function CallInterface() {
 
         {/* Footer */}
         <p className="text-center text-xs text-neutral-600">
-          This is a simulation. For real emergencies, call your local 911.
+          This is a simulation.
         </p>
       </div>
     </div>
