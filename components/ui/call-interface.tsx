@@ -48,9 +48,9 @@ function WaveformVisualizer({ active }: { active: boolean }) {
           style={
             active
               ? {
-                  height: `${Math.random() * 48 + 8}px`,
+                  height: `${8}px`,
                   animationDelay: `${i * 50}ms`,
-                  animationDuration: `${300 + Math.random() * 400}ms`,
+                  animationDuration: `${300 + i * 50}ms`,
                 }
               : undefined
           }
