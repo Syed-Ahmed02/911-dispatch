@@ -29,6 +29,23 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
+## Triage JSON extraction
+
+The app extracts the agent’s **triage_state** JSON in two ways:
+
+1. **In-app (your Vercel URL)**
+   - While on a call, if the Atoms backend sends `update` or `metadata` data messages containing `triage_state`, the client shows it and POSTs it to `/api/triage`.
+   - The UI shows a “Triage state (extracted JSON)” section with **Download JSON** and **Refresh from server**.
+
+2. **Webhook (for when the agent only sends to a URL)**
+   - In the [Atoms dashboard](https://console.smallest.ai), add a webhook URL pointing to **your deployed app** (not localhost):
+     `https://<your-vercel-app>/api/triage-webhook`
+   - Subscribe to **post-conversation** (and optionally pre-conversation).
+   - If your agent writes triage state into conversation variables, the webhook will receive it and the app stores it.
+   - After the call, open the app and click **Refresh from server**, or call `GET /api/triage` to retrieve the latest state.
+
+**Get the JSON:** Use “Download JSON” in the UI, or `GET https://<your-vercel-app>/api/triage` to receive the latest stored triage object.
+
 ## Deploy on Vercel
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.

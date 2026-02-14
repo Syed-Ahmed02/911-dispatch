@@ -1,7 +1,7 @@
 "use client";
 
-import { useAtomsCall, type CallStatus } from "@/hooks/use-atoms-call";
-import { useEffect, useRef } from "react";
+import { useAtomsCall, type CallStatus, type TriageState } from "@/hooks/use-atoms-call";
+import { useEffect, useRef, useState } from "react";
 
 function StatusIndicator({ status }: { status: CallStatus }) {
   const config: Record<CallStatus, { color: string; pulse: boolean; label: string }> = {
@@ -67,11 +67,13 @@ export function CallInterface() {
     isAgentSpeaking,
     isMuted,
     transcript,
+    triageState,
     startCall,
     endCall,
     toggleMute,
     error,
   } = useAtomsCall();
+  const [serverTriage, setServerTriage] = useState<TriageState | null>(null);
 
   const transcriptEndRef = useRef<HTMLDivElement>(null);
 
@@ -79,6 +81,14 @@ export function CallInterface() {
   useEffect(() => {
     transcriptEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [transcript]);
+
+  const displayTriage = triageState ?? serverTriage;
+  const fetchLatestTriage = () => {
+    fetch("/api/triage")
+      .then((r) => r.json())
+      .then((d) => d.triage && setServerTriage(d.triage))
+      .catch(() => {});
+  };
 
   const isCallActive = status === "active" || status === "waiting_for_agent";
   const isConnecting = status === "connecting";
@@ -196,6 +206,47 @@ export function CallInterface() {
             )}
           </div>
         </div>
+
+        {/* Triage extraction (JSON) */}
+        {(displayTriage || status !== "idle") && (
+          <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-4 shadow-2xl">
+            <div className="flex items-center justify-between gap-2 mb-3">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                Triage state (extracted JSON)
+              </h2>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={fetchLatestTriage}
+                  className="rounded bg-neutral-700 px-2 py-1 text-xs text-neutral-300 hover:bg-neutral-600"
+                >
+                  Refresh from server
+                </button>
+                {displayTriage && (
+                  <a
+                    href={`data:application/json;charset=utf-8,${encodeURIComponent(
+                      JSON.stringify(displayTriage, null, 2)
+                    )}`}
+                    download="triage-state.json"
+                    className="rounded bg-red-600/80 px-2 py-1 text-xs text-white hover:bg-red-500"
+                  >
+                    Download JSON
+                  </a>
+                )}
+              </div>
+            </div>
+            {displayTriage ? (
+              <pre className="max-h-64 overflow-auto rounded bg-neutral-950 p-3 text-xs text-neutral-400">
+                {JSON.stringify(displayTriage, null, 2)}
+              </pre>
+            ) : (
+              <p className="text-sm text-neutral-600">
+                No triage state yet. It will appear when the agent calls triage_update, or after a
+                webhook. Use “Refresh from server” after a call if you use the webhook.
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Live Transcript */}
         {transcript.length > 0 && (

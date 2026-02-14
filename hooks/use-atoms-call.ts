@@ -18,12 +18,28 @@ export interface TranscriptMessage {
   timestamp: number;
 }
 
+export interface TriageState {
+  location_raw?: string;
+  location_confirmed?: boolean;
+  callback_number?: string;
+  is_emergency?: boolean;
+  category?: string;
+  urgency?: string;
+  suggested_units?: { police?: boolean; fire?: boolean; ems?: boolean };
+  red_flags?: string[];
+  one_sentence_summary?: string;
+  last_caller_message?: string;
+  last_assistant_message?: string;
+  [key: string]: unknown;
+}
+
 export interface UseAtomsCallReturn {
   status: CallStatus;
   statusMessage: string;
   isAgentSpeaking: boolean;
   isMuted: boolean;
   transcript: TranscriptMessage[];
+  triageState: TriageState | null;
   startCall: () => Promise<void>;
   endCall: () => void;
   toggleMute: () => void;
@@ -37,6 +53,7 @@ export function useAtomsCall(): UseAtomsCallReturn {
   const [isAgentSpeaking, setIsAgentSpeaking] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [transcript, setTranscript] = useState<TranscriptMessage[]>([]);
+  const [triageState, setTriageState] = useState<TriageState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const messageIdRef = useRef(0);
 
@@ -62,6 +79,15 @@ export function useAtomsCall(): UseAtomsCallReturn {
     setIsAgentSpeaking(false);
     setIsMuted(false);
     setError(null);
+    // Keep triageState so UI can still show last extraction after call ends
+  }, []);
+
+  const pushTriageToServer = useCallback((state: TriageState) => {
+    fetch("/api/triage", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ triage_state: state }),
+    }).catch((err) => console.warn("[triage] Failed to store on server:", err));
   }, []);
 
   // Set up event listeners
@@ -99,6 +125,22 @@ export function useAtomsCall(): UseAtomsCallReturn {
       addTranscript("dispatcher", data.text);
     });
 
+    client.on("update", (data: Record<string, unknown>) => {
+      const triage = extractTriageFromUpdate(data);
+      if (triage) {
+        setTriageState(triage);
+        pushTriageToServer(triage);
+      }
+    });
+
+    client.on("metadata", (data: Record<string, unknown>) => {
+      const triage = extractTriageFromUpdate(data);
+      if (triage) {
+        setTriageState(triage);
+        pushTriageToServer(triage);
+      }
+    });
+
     client.on("microphone_permission_granted", () => {
       // Mic access OK
     });
@@ -127,12 +169,13 @@ export function useAtomsCall(): UseAtomsCallReturn {
     return () => {
       client.removeAllListeners();
     };
-  }, [client, addTranscript]);
+  }, [client, addTranscript, pushTriageToServer]);
 
   const startCall = useCallback(async () => {
     try {
       setError(null);
       setTranscript([]);
+      setTriageState(null);
       setStatus("connecting");
       setStatusMessage("Initiating call...");
 
@@ -192,9 +235,38 @@ export function useAtomsCall(): UseAtomsCallReturn {
     isAgentSpeaking,
     isMuted,
     transcript,
+    triageState,
     startCall,
     endCall,
     toggleMute,
     error,
   };
+}
+
+function extractTriageFromUpdate(data: Record<string, unknown>): TriageState | null {
+  if (!data || typeof data !== "object") return null;
+  const raw =
+    data.triage_state ??
+    data.triageState ??
+    data.triage_raw ??
+    (typeof data.triage === "string" ? data.triage : null);
+  if (raw == null) {
+    if (
+      typeof data.location_raw === "string" ||
+      typeof data.category === "string" ||
+      data.is_emergency !== undefined
+    ) {
+      return data as TriageState;
+    }
+    return null;
+  }
+  if (typeof raw === "string") {
+    try {
+      const parsed = JSON.parse(raw) as TriageState;
+      return parsed && typeof parsed === "object" ? parsed : null;
+    } catch {
+      return null;
+    }
+  }
+  return (raw as TriageState) && typeof raw === "object" ? (raw as TriageState) : null;
 }
