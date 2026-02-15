@@ -123,73 +123,48 @@
   body {
     @apply bg-background text-foreground;
   }
+  .maplibregl-popup-content {
+    @apply bg-transparent! shadow-none! p-0! rounded-none!;
+  }
+  .maplibregl-popup-tip {
+    @apply hidden!;
+  }
 }
 
-/* ── 911 Dispatch Design System ── */
-
-/* Waveform bar animation — staggered sine-wave effect */
+/* 911 Dispatch Design System */
 @keyframes waveform-bar {
   0%, 100% { transform: scaleY(0.3); }
   50% { transform: scaleY(1); }
 }
 
-/* Gentle fade-in-up for transcript messages */
 @keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* Slow breathing glow for the call button */
 @keyframes glow-breathe {
   0%, 100% { box-shadow: 0 0 20px 0 rgba(220, 38, 38, 0.3); }
   50% { box-shadow: 0 0 36px 6px rgba(220, 38, 38, 0.5); }
 }
 
-/* Typing cursor blink */
 @keyframes cursor-blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
 }
 
-/* Smooth ring expand for connecting state */
 @keyframes ring-expand {
   0% { transform: scale(1); opacity: 0.6; }
   100% { transform: scale(1.6); opacity: 0; }
 }
 
-.animate-waveform-bar {
-  animation: waveform-bar ease-in-out infinite;
-}
+.animate-waveform-bar { animation: waveform-bar ease-in-out infinite; }
+.animate-fade-in-up { animation: fade-in-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) both; }
+.animate-glow-breathe { animation: glow-breathe 2.5s ease-in-out infinite; }
+.animate-cursor-blink { animation: cursor-blink 1s step-end infinite; }
+.animate-ring-expand { animation: ring-expand 1.4s cubic-bezier(0.16, 1, 0.3, 1) infinite; }
 
-.animate-fade-in-up {
-  animation: fade-in-up 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.animate-glow-breathe {
-  animation: glow-breathe 2.5s ease-in-out infinite;
-}
-
-.animate-cursor-blink {
-  animation: cursor-blink 1s step-end infinite;
-}
-
-.animate-ring-expand {
-  animation: ring-expand 1.4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
-}
-
-/* Custom scrollbar for transcript */
-.scrollbar-dispatch::-webkit-scrollbar {
-  width: 4px;
-}
-.scrollbar-dispatch::-webkit-scrollbar-track {
-  background: transparent;
-}
+.scrollbar-dispatch::-webkit-scrollbar { width: 4px; }
+.scrollbar-dispatch::-webkit-scrollbar-track { background: transparent; }
 .scrollbar-dispatch::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.08);
   border-radius: 9999px;
@@ -198,7 +173,6 @@
   background: rgba(255, 255, 255, 0.15);
 }
 
-/* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .animate-waveform-bar,
   .animate-fade-in-up,
