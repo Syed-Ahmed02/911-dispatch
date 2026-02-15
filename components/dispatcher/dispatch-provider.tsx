@@ -252,19 +252,19 @@ export function statusLabel(status: CallStatus): string {
 }
 
 export function priorityTone(priority: string): string {
-  if (priority === "P1") return "bg-stone-200 text-stone-900 border-stone-400";
-  if (priority === "P2") return "bg-stone-100 text-stone-800 border-stone-300";
-  if (priority === "P3") return "bg-slate-100 text-slate-800 border-slate-300";
-  if (priority === "P4") return "bg-slate-50 text-slate-700 border-slate-300";
-  return "bg-slate-50 text-slate-600 border-slate-300";
+  if (priority === "P1") return "bg-emerald-200 text-emerald-900 border-emerald-400";
+  if (priority === "P2") return "bg-emerald-100 text-emerald-800 border-emerald-300";
+  if (priority === "P3") return "bg-emerald-50 text-emerald-800 border-emerald-300";
+  if (priority === "P4") return "bg-emerald-50/80 text-emerald-700 border-emerald-200";
+  return "bg-emerald-50/60 text-emerald-600 border-emerald-200";
 }
 
 export function statusTone(status: CallStatus): string {
-  if (status === "ongoing") return "bg-stone-200 text-stone-900 border-stone-400";
+  if (status === "ongoing") return "bg-emerald-200 text-emerald-900 border-emerald-400";
   if (status === "dispatch_sent") {
-    return "bg-slate-100 text-slate-800 border-slate-300";
+    return "bg-emerald-100 text-emerald-800 border-emerald-300";
   }
-  return "bg-slate-50 text-slate-700 border-slate-300";
+  return "bg-emerald-50/80 text-emerald-700 border-emerald-200";
 }
 
 export function sortCalls(calls: DispatchCall[]): DispatchCall[] {

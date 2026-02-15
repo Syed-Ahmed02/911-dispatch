@@ -46,25 +46,25 @@ function QueueTable() {
   };
 
   return (
-    <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-200 px-4 py-3">
-        <h2 className="text-xs uppercase tracking-[0.16em] text-slate-700">Current Queue</h2>
+    <section className="overflow-hidden rounded-xl border border-emerald-200 bg-white shadow-sm">
+      <div className="border-b border-emerald-200 px-4 py-3">
+        <h2 className="text-xs uppercase tracking-[0.16em] text-emerald-800">Current Queue</h2>
         <div className="mt-3 flex flex-wrap gap-2 md:hidden">
           <button
             onClick={() => selectSort("priority")}
-            className="h-8 rounded border border-slate-200 bg-slate-50 px-2 text-[11px] uppercase tracking-[0.12em] text-slate-600 hover:border-slate-300 hover:text-slate-800"
+            className="h-8 rounded border border-emerald-200 bg-emerald-50/60 px-2 text-[11px] uppercase tracking-[0.12em] text-slate-600 hover:border-emerald-300 hover:text-slate-900"
           >
             Priority
           </button>
           <button
             onClick={() => selectSort("status")}
-            className="h-8 rounded border border-slate-200 bg-slate-50 px-2 text-[11px] uppercase tracking-[0.12em] text-slate-600 hover:border-slate-300 hover:text-slate-800"
+            className="h-8 rounded border border-emerald-200 bg-emerald-50/60 px-2 text-[11px] uppercase tracking-[0.12em] text-slate-600 hover:border-emerald-300 hover:text-slate-900"
           >
             Status
           </button>
           <button
             onClick={() => selectSort("elapsed")}
-            className="h-8 rounded border border-slate-200 bg-slate-50 px-2 text-[11px] uppercase tracking-[0.12em] text-slate-600 hover:border-slate-300 hover:text-slate-800"
+            className="h-8 rounded border border-emerald-200 bg-emerald-50/60 px-2 text-[11px] uppercase tracking-[0.12em] text-slate-600 hover:border-emerald-300 hover:text-slate-900"
           >
             Elapsed
           </button>
@@ -79,14 +79,14 @@ function QueueTable() {
             onClick={() => selectCall(call.id)}
             className={`w-full rounded-lg border p-3 text-left transition ${
               selectedCallId === call.id
-                ? "border-slate-400 bg-slate-100"
-                : "border-slate-200 bg-slate-50 hover:border-slate-300"
+                ? "border-emerald-400 bg-emerald-100"
+                : "border-emerald-200 bg-emerald-50/60 hover:border-emerald-300"
             }`}
           >
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-sm font-medium text-slate-900">{call.phoneNumber}</p>
-                <p className="mt-1 text-xs text-slate-500">{call.locationText}</p>
+                <p className="mt-1 text-xs text-slate-600">{call.locationText}</p>
               </div>
               <span className={`rounded border px-2 py-1 text-[11px] font-semibold ${priorityTone(call.priority)}`}>
                 {call.priority}
@@ -104,21 +104,21 @@ function QueueTable() {
 
       <div className="hidden overflow-x-auto md:block">
         <table className="min-w-full text-sm">
-          <thead className="text-left text-[11px] uppercase tracking-[0.12em] text-slate-500">
+          <thead className="text-left text-[11px] uppercase tracking-[0.12em] text-slate-600">
             <tr>
               <th className="px-4 py-4">Phone Number</th>
               <th className="px-4 py-4">
-                <button onClick={() => selectSort("priority")} className="h-8 rounded px-2 hover:bg-slate-100 hover:text-slate-800">
+                <button onClick={() => selectSort("priority")} className="h-8 rounded px-2 hover:bg-emerald-100 hover:text-slate-900">
                   Priority
                 </button>
               </th>
               <th className="px-4 py-4">
-                <button onClick={() => selectSort("status")} className="h-8 rounded px-2 hover:bg-slate-100 hover:text-slate-800">
+                <button onClick={() => selectSort("status")} className="h-8 rounded px-2 hover:bg-emerald-100 hover:text-slate-900">
                   Status
                 </button>
               </th>
               <th className="px-4 py-4">
-                <button onClick={() => selectSort("elapsed")} className="h-8 rounded px-2 hover:bg-slate-100 hover:text-slate-800">
+                <button onClick={() => selectSort("elapsed")} className="h-8 rounded px-2 hover:bg-emerald-100 hover:text-slate-900">
                   Elapsed
                 </button>
               </th>
@@ -128,12 +128,12 @@ function QueueTable() {
             {rows.map((call) => (
               <tr
                 key={call.id}
-                className={`cursor-pointer border-t border-slate-200 transition hover:bg-slate-50 ${
-                  selectedCallId === call.id ? "bg-slate-100" : ""
+                className={`cursor-pointer border-t border-emerald-200 transition hover:bg-emerald-50/60 ${
+                  selectedCallId === call.id ? "bg-emerald-100" : ""
                 }`}
                 onClick={() => selectCall(call.id)}
               >
-                <td className="px-4 py-4 text-slate-700">{call.phoneNumber}</td>
+                <td className="px-4 py-4 text-slate-800">{call.phoneNumber}</td>
                 <td className="px-4 py-4">
                   <span className={`rounded border px-2 py-1 text-xs font-semibold ${priorityTone(call.priority)}`}>
                     {call.priority}
@@ -157,20 +157,20 @@ function QueueTable() {
 function Transcript({ call }: { call: DispatchCall }) {
   if (call.transcript.length === 0) {
     return (
-      <div className="rounded border border-slate-200 bg-slate-50 p-3 text-xs text-slate-500">
+      <div className="rounded border border-emerald-200 bg-emerald-50/60 p-3 text-xs text-slate-600">
         No transcript lines yet.
       </div>
     );
   }
 
   return (
-    <div className="max-h-52 space-y-2 overflow-y-auto rounded border border-slate-200 bg-slate-50 p-3">
+    <div className="max-h-52 space-y-2 overflow-y-auto rounded border border-emerald-200 bg-emerald-50/60 p-3">
       {call.transcript.map((line) => (
         <div key={line.id} className="text-xs leading-relaxed">
-          <span className={`mr-2 font-semibold ${line.speaker === "caller" ? "text-slate-700" : "text-slate-600"}`}>
+          <span className={`mr-2 font-semibold ${line.speaker === "caller" ? "text-slate-800" : "text-slate-600"}`}>
             {line.speaker === "caller" ? "CALLER" : "DISPATCH"}
           </span>
-          <span className="text-slate-700">{line.text}</span>
+          <span className="text-slate-800">{line.text}</span>
         </div>
       ))}
     </div>
@@ -183,67 +183,67 @@ function DetailPanel() {
 
   if (!call) {
     return (
-      <aside className="rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-500 shadow-sm">
+      <aside className="rounded-xl border border-emerald-200 bg-white p-4 text-sm text-slate-600 shadow-sm">
         Select a call to see details.
       </aside>
     );
   }
 
   return (
-    <aside className="space-y-5 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <aside className="space-y-5 rounded-xl border border-emerald-200 bg-white p-4 shadow-sm">
       <div className="flex items-start justify-between">
         <div>
           <h3 className="text-base font-semibold text-slate-900">{call.callerName}</h3>
-          <p className="text-xs text-slate-500">{call.phoneNumber}</p>
+          <p className="text-xs text-slate-600">{call.phoneNumber}</p>
         </div>
         <span className={`rounded border px-2 py-1 text-xs font-semibold ${priorityTone(call.priority)}`}>
           {call.priority}
         </span>
       </div>
 
-      <div className="grid gap-3 border-t border-slate-200 pt-4 text-sm">
-        <p className="text-slate-700">{call.locationText}</p>
+      <div className="grid gap-3 border-t border-emerald-200 pt-4 text-sm">
+        <p className="text-slate-800">{call.locationText}</p>
         <a
           href={mapUrl(call.locationText, call.latitude, call.longitude)}
           target="_blank"
           rel="noreferrer"
-          className="inline-flex items-center gap-1 text-xs text-slate-700 underline"
+          className="inline-flex items-center gap-1 text-xs text-slate-800 underline"
         >
           <MapPin className="h-3.5 w-3.5" />
           Open map link
         </a>
-        <p className="text-slate-500">Type: {call.emergencyType}</p>
-        <p className="text-slate-500">Elapsed: {formatElapsed(call.startedAt, now)}</p>
+        <p className="text-slate-600">Type: {call.emergencyType}</p>
+        <p className="text-slate-600">Elapsed: {formatElapsed(call.startedAt, now)}</p>
       </div>
 
-      <div className="border-t border-slate-200 pt-4">
-        <p className="mb-2 text-xs uppercase tracking-[0.14em] text-slate-500">Extracted Information</p>
+      <div className="border-t border-emerald-200 pt-4">
+        <p className="mb-2 text-xs uppercase tracking-[0.14em] text-slate-600">Extracted Information</p>
         <div className="flex flex-wrap gap-2">
           {call.tags.map((tag) => (
-            <span key={tag} className="rounded-full border border-slate-300 bg-slate-50 px-2 py-1 text-xs text-slate-700">
+            <span key={tag} className="rounded-full border border-emerald-300 bg-emerald-50/60 px-2 py-1 text-xs text-slate-800">
               {tag}
             </span>
           ))}
         </div>
       </div>
 
-      <div className="grid gap-3 border-t border-slate-200 pt-4 text-sm sm:grid-cols-2">
-        <div className="rounded border border-slate-200 bg-slate-50 p-3">
-          <p className="text-xs text-slate-500">Urgency Score</p>
+      <div className="grid gap-3 border-t border-emerald-200 pt-4 text-sm sm:grid-cols-2">
+        <div className="rounded border border-emerald-200 bg-emerald-50/60 p-3">
+          <p className="text-xs text-slate-600">Urgency Score</p>
           <p className="mt-1 text-lg font-semibold text-slate-900">{call.urgencyScore}</p>
         </div>
-        <div className="rounded border border-slate-200 bg-slate-50 p-3">
-          <p className="text-xs text-slate-500">Confidence</p>
+        <div className="rounded border border-emerald-200 bg-emerald-50/60 p-3">
+          <p className="text-xs text-slate-600">Confidence</p>
           <p className="mt-1 text-lg font-semibold text-slate-900">{Math.round(call.confidence * 100)}%</p>
         </div>
       </div>
 
-      <div className="border-t border-slate-200 pt-4">
-        <p className="mb-2 text-xs uppercase tracking-[0.14em] text-slate-500">Live Transcript</p>
+      <div className="border-t border-emerald-200 pt-4">
+        <p className="mb-2 text-xs uppercase tracking-[0.14em] text-slate-600">Live Transcript</p>
         <Transcript call={call} />
       </div>
 
-      <div className="flex gap-2 border-t border-slate-200 pt-4">
+      <div className="flex gap-2 border-t border-emerald-200 pt-4">
         <button
           className="h-10 rounded border border-emerald-200 bg-emerald-50 px-3 text-sm text-emerald-700 hover:bg-emerald-100"
           onClick={() => updateCallStatus(call.id, "dispatch_sent")}
@@ -251,15 +251,15 @@ function DetailPanel() {
           Dispatch Sent
         </button>
         <button
-          className="h-10 rounded border border-slate-300 bg-slate-100 px-3 text-sm text-slate-700 hover:bg-slate-200"
+          className="h-10 rounded border border-emerald-300 bg-emerald-100 px-3 text-sm text-slate-800 hover:bg-emerald-100"
           onClick={() => updateCallStatus(call.id, "resolved")}
         >
           Resolved
         </button>
       </div>
 
-      <div className="border-t border-slate-200 pt-4">
-        <label htmlFor="notes" className="mb-2 inline-flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-slate-500">
+      <div className="border-t border-emerald-200 pt-4">
+        <label htmlFor="notes" className="mb-2 inline-flex items-center gap-2 text-xs uppercase tracking-[0.14em] text-slate-600">
           <NotebookPen className="h-3.5 w-3.5" />
           Notes
         </label>
@@ -267,7 +267,7 @@ function DetailPanel() {
           id="notes"
           value={call.notes}
           onChange={(event) => updateCallNotes(call.id, event.target.value)}
-          className="h-24 w-full rounded border border-slate-300 bg-slate-50 p-2 text-sm text-slate-800 outline-none ring-offset-0 focus:border-slate-500"
+          className="h-24 w-full rounded border border-emerald-300 bg-emerald-50/60 p-2 text-sm text-slate-800 outline-none ring-offset-0 focus:border-emerald-500"
           placeholder="Dispatcher notes..."
         />
       </div>
@@ -277,7 +277,7 @@ function DetailPanel() {
 
 export function QueuePage() {
   return (
-    <div className="w-full grid gap-6 xl:grid-cols-[1.6fr_1fr]">
+    <div className="grid h-full min-h-0 w-full flex-1 gap-6 xl:grid-cols-[1.6fr_1fr]">
       <QueueTable />
       <DetailPanel />
     </div>

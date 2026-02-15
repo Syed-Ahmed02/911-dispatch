@@ -25,12 +25,12 @@ function MetricCard({
   tone: string;
 }) {
   return (
-    <article className="relative overflow-hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <article className="relative overflow-hidden rounded-xl border border-emerald-200 bg-white p-4 shadow-sm">
       <div className={`pointer-events-none absolute inset-x-0 top-0 h-1 ${tone}`} />
-      <p className="text-[11px] uppercase tracking-[0.16em] text-slate-500">{label}</p>
+      <p className="text-[11px] uppercase tracking-[0.16em] text-emerald-700">{label}</p>
       <p className="mt-2 text-3xl font-semibold text-slate-900">{value}</p>
-      <p className="mt-2 flex items-center gap-1 text-xs text-slate-500">
-        <TrendingUp className="h-3 w-3 text-slate-500" />
+      <p className="mt-2 flex items-center gap-1 text-xs text-emerald-700">
+        <TrendingUp className="h-3 w-3 text-emerald-700" />
         {delta}
       </p>
     </article>
@@ -89,21 +89,21 @@ function PriorityMap() {
   const activeCall = calls.find((call) => call.id === activeCallId) ?? null;
 
   const markerTone = (priority: string) => {
-    if (priority === "P1") return "bg-black";
-    if (priority === "P2") return "bg-slate-700";
-    if (priority === "P3") return "bg-slate-600";
-    if (priority === "P4") return "bg-slate-500";
-    return "bg-slate-400";
+    if (priority === "P1") return "bg-emerald-800";
+    if (priority === "P2") return "bg-emerald-600";
+    if (priority === "P3") return "bg-emerald-500";
+    if (priority === "P4") return "bg-emerald-400";
+    return "bg-emerald-300";
   };
 
   return (
-    <section className="flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-      <div className="mb-4 flex items-center justify-between border-b border-slate-200 pb-3">
-        <h2 className="text-xs uppercase tracking-[0.16em] text-slate-700">Incident Heat Map</h2>
-        <span className="text-xs text-slate-500">Priority Markers</span>
+    <section className="flex h-full flex-col overflow-hidden rounded-xl border border-emerald-200 bg-white p-4 shadow-sm">
+      <div className="mb-4 flex items-center justify-between border-b border-emerald-100 pb-3">
+        <h2 className="text-xs uppercase tracking-[0.16em] text-emerald-800">Incident Heat Map</h2>
+        <span className="text-xs text-emerald-700">Priority Markers</span>
       </div>
 
-      <div className="min-h-[22rem] overflow-hidden rounded-lg border border-slate-200 xl:flex-1">
+      <div className="min-h-[22rem] overflow-hidden rounded-lg border border-emerald-200 xl:flex-1">
         <Map
           ref={mapRef}
           theme="light"
@@ -125,10 +125,10 @@ function PriorityMap() {
                   className={`h-5 w-5 rounded-full ring-2 ring-white shadow-[0_4px_14px_rgba(15,23,42,.35)] ${markerTone(call.priority)}`}
                 />
               </MarkerContent>
-              <MarkerTooltip className="border border-slate-200 bg-white text-slate-800 shadow">
+              <MarkerTooltip className="border border-emerald-200 bg-white text-slate-800 shadow">
                 <p className="text-[11px] font-semibold">{call.priority}</p>
                 <p className="text-[11px]">{call.emergencyType}</p>
-                <p className="text-[11px] text-slate-500">{call.locationText}</p>
+                <p className="text-[11px] text-emerald-700">{call.locationText}</p>
               </MarkerTooltip>
             </MapMarker>
           ))}
@@ -139,13 +139,13 @@ function PriorityMap() {
               latitude={activeCall.latitude}
               onClose={() => setActiveCallId(null)}
               closeButton
-              className="w-56 border border-slate-200 bg-white text-slate-800 shadow"
+              className="w-56 border border-emerald-200 bg-white text-slate-800 shadow"
             >
               <p className="text-xs font-semibold text-slate-800">
                 {activeCall.emergencyType} · {activeCall.priority}
               </p>
-              <p className="mt-1 text-xs text-slate-600">{activeCall.locationText}</p>
-              <p className="mt-1 text-xs text-slate-500">{activeCall.phoneNumber}</p>
+              <p className="mt-1 text-xs text-emerald-700">{activeCall.locationText}</p>
+              <p className="mt-1 text-xs text-emerald-700">{activeCall.phoneNumber}</p>
             </MapPopup>
           ) : null}
 
@@ -154,7 +154,7 @@ function PriorityMap() {
             showZoom
             showCompass
             showFullscreen
-            className="[&_button]:text-slate-800 [&_button]:bg-white/95 [&_button:hover]:bg-slate-100 [&_.border-border]:border-slate-300 [&_button:not(:last-child)]:border-slate-300 [&_.bg-background]:bg-white/95"
+            className="[&_button]:text-slate-800 [&_button]:bg-white/95 [&_button:hover]:bg-emerald-50 [&_.border-border]:border-emerald-200 [&_button:not(:last-child)]:border-emerald-200 [&_.bg-background]:bg-white/95"
           />
         </Map>
       </div>
@@ -184,8 +184,8 @@ function PulseRow({
         </span>
         <span className="font-semibold text-slate-900">{value}</span>
       </div>
-      <div className="h-2 rounded bg-slate-200">
-        <div className="h-2 rounded bg-slate-500" style={{ width: `${width}%` }} />
+      <div className="h-2 rounded bg-emerald-100">
+        <div className="h-2 rounded bg-emerald-500" style={{ width: `${width}%` }} />
       </div>
     </div>
   );
@@ -196,8 +196,8 @@ function ChannelPulse() {
   const total = callsByType.Medical + callsByType.Fire + callsByType.Police || 1;
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-      <h2 className="border-b border-slate-200 pb-3 text-xs uppercase tracking-[0.16em] text-slate-700">
+    <section className="rounded-xl border border-emerald-200 bg-white p-4 shadow-sm">
+      <h2 className="border-b border-emerald-100 pb-3 text-xs uppercase tracking-[0.16em] text-emerald-800">
         Channel Pulse
       </h2>
 
@@ -206,19 +206,19 @@ function ChannelPulse() {
           name="Medical"
           value={callsByType.Medical}
           total={total}
-          icon={<HeartPulse className="h-3.5 w-3.5 text-slate-500" />}
+          icon={<HeartPulse className="h-3.5 w-3.5 text-emerald-700" />}
         />
         <PulseRow
           name="Fire"
           value={callsByType.Fire}
           total={total}
-          icon={<Flame className="h-3.5 w-3.5 text-slate-500" />}
+          icon={<Flame className="h-3.5 w-3.5 text-emerald-700" />}
         />
         <PulseRow
           name="Police"
           value={callsByType.Police}
           total={total}
-          icon={<ShieldAlert className="h-3.5 w-3.5 text-slate-500" />}
+          icon={<ShieldAlert className="h-3.5 w-3.5 text-emerald-700" />}
         />
       </div>
     </section>
@@ -230,20 +230,20 @@ function CallsByHourChart() {
   const maxCount = Math.max(...callsByHour.map((point) => point.count), 1);
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-      <h2 className="border-b border-slate-200 pb-3 text-xs uppercase tracking-[0.16em] text-slate-700">
+    <section className="rounded-xl border border-emerald-200 bg-white p-4 shadow-sm">
+      <h2 className="border-b border-emerald-100 pb-3 text-xs uppercase tracking-[0.16em] text-emerald-800">
         Traffic Volume
       </h2>
       <div className="mt-4 grid grid-cols-8 gap-2">
         {callsByHour.map((point) => (
           <div key={point.hour} className="flex flex-col items-center gap-2">
-            <div className="flex h-24 w-full items-end rounded bg-slate-100 p-1">
+            <div className="flex h-24 w-full items-end rounded bg-emerald-100 p-1">
               <div
-                className="w-full rounded bg-slate-600"
+                className="w-full rounded bg-emerald-600"
                 style={{ height: `${Math.max((point.count / maxCount) * 100, 6)}%` }}
               />
             </div>
-            <span className="text-[10px] text-slate-500">{point.hour}</span>
+            <span className="text-[10px] text-emerald-700">{point.hour}</span>
           </div>
         ))}
       </div>
@@ -256,19 +256,19 @@ function RecentCalls() {
   const visible = useMemo(() => sortCalls(calls).slice(0, 6), [calls]);
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-      <h2 className="border-b border-slate-200 pb-3 text-xs uppercase tracking-[0.16em] text-slate-700">
+    <section className="rounded-xl border border-emerald-200 bg-white p-4 shadow-sm">
+      <h2 className="border-b border-emerald-100 pb-3 text-xs uppercase tracking-[0.16em] text-emerald-800">
         Active Incident Feed
       </h2>
       <div className="mt-4 space-y-3">
         {visible.map((call) => (
           <article
             key={call.id}
-            className="flex min-h-16 items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-3 transition hover:border-slate-400"
+            className="flex min-h-16 items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50/50 p-3 transition hover:border-emerald-400"
           >
             <div>
               <p className="text-sm text-slate-900">{call.locationText}</p>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-emerald-700">
                 {call.emergencyType} • {call.phoneNumber}
               </p>
             </div>
@@ -286,43 +286,43 @@ export function OverviewPage() {
   const { metrics } = useDispatchData();
 
   return (
-    <div className="space-y-6">
+    <div className="min-h-0 flex-1 w-full space-y-6">
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <MetricCard
           label="Total Calls Today"
           value={String(metrics.totalCallsToday)}
           delta="+8% from 1h ago"
-          tone="bg-slate-400"
+          tone="bg-emerald-400"
         />
         <MetricCard
           label="Ongoing Calls"
           value={String(metrics.ongoingCalls)}
           delta="Real-time queue"
-          tone="bg-slate-500"
+          tone="bg-emerald-500"
         />
         <MetricCard
           label="Dispatch Sent"
           value={String(metrics.dispatchSent)}
           delta="Units actively en route"
-          tone="bg-slate-500"
+          tone="bg-emerald-500"
         />
         <MetricCard
           label="Resolved Calls"
           value={String(metrics.resolvedCalls)}
           delta="Closed in this cycle"
-          tone="bg-slate-400"
+          tone="bg-emerald-400"
         />
         <MetricCard
           label="Average Dispatch Time"
           value={`${metrics.avgTimeToDispatchMins} min`}
           delta="Target: < 5 min"
-          tone="bg-slate-500"
+          tone="bg-emerald-500"
         />
         <MetricCard
           label="High Priority (P1/P2)"
           value={String(metrics.highPriorityCount)}
           delta="Monitor escalation risk"
-          tone="bg-slate-600"
+          tone="bg-emerald-600"
         />
       </section>
 
@@ -331,13 +331,13 @@ export function OverviewPage() {
         <div className="space-y-6">
           <ChannelPulse />
           <CallsByHourChart />
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-            <p className="text-xs uppercase tracking-[0.16em] text-slate-500">System Clock</p>
+          <div className="rounded-xl border border-emerald-200 bg-white p-4 shadow-sm">
+            <p className="text-xs uppercase tracking-[0.16em] text-emerald-700">System Clock</p>
             <p className="mt-2 inline-flex items-center gap-2 text-2xl font-semibold text-slate-900">
-              <Timer className="h-5 w-5 text-slate-600" />
+              <Timer className="h-5 w-5 text-emerald-700" />
               UTC-08 Operational Window
             </p>
-            <p className="mt-2 text-xs text-slate-500">
+            <p className="mt-2 text-xs text-emerald-700">
               All events synchronized to call intake timestamps.
             </p>
           </div>

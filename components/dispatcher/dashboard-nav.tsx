@@ -39,8 +39,8 @@ export function DashboardNav() {
               render={<Link href={tab.href} />}
               className={`h-10 rounded-md border text-sm tracking-wide ${
                 active
-                  ? "border-slate-400 bg-slate-200 text-slate-900"
-                  : "border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-400 hover:text-slate-900"
+                  ? "border-emerald-400 bg-emerald-100 text-slate-900"
+                  : "border-emerald-200 bg-emerald-50/60 text-slate-600 hover:border-emerald-400 hover:text-slate-900"
               }`}
             >
               <Icon className="h-4 w-4" />

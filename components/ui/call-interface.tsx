@@ -48,7 +48,7 @@ function WaveformVisualizer({ active }: { active: boolean }) {
           key={i}
           className={`w-1 rounded-full transition-all duration-150 ${
             active
-              ? "bg-red-500/80 animate-pulse"
+              ? "bg-emerald-500/80 animate-pulse"
               : "bg-slate-300 h-2"
           }`}
           style={
@@ -90,10 +90,10 @@ export function CallInterface() {
   const isConnecting = status === "connecting";
 
   return (
-    <div className="grid w-full gap-4 md:gap-6 xl:grid-cols-[1.6fr_1fr]">
+    <div className="grid min-h-0 w-full flex-1 gap-4 md:gap-6 xl:grid-cols-[1.6fr_1fr]">
         {/* Main Card */}
-        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 px-4 py-3 text-center md:px-6 md:py-4">
+        <section className="overflow-hidden rounded-xl border border-emerald-200 bg-white shadow-sm">
+          <div className="border-b border-emerald-100 px-4 py-3 text-center md:px-6 md:py-4">
             <h1 className="text-4xl font-black tracking-tight text-slate-900 md:text-5xl">
               911
             </h1>
@@ -109,7 +109,7 @@ export function CallInterface() {
               </span>
             </div>
 
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-4">
               {isCallActive || isConnecting ? (
                 <WaveformVisualizer active={isAgentSpeaking} />
               ) : (
@@ -136,7 +136,7 @@ export function CallInterface() {
                 <div className="flex flex-col items-center gap-2">
                   <button
                     onClick={startCall}
-                    className="flex h-16 w-16 items-center justify-center rounded-full bg-red-600 text-white shadow-lg shadow-red-600/30 transition-all hover:scale-105 hover:bg-red-500 hover:shadow-red-500/40 active:scale-95 sm:h-20 sm:w-20"
+                    className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 transition-all hover:scale-105 hover:bg-emerald-500 hover:shadow-emerald-500/40 active:scale-95 sm:h-20 sm:w-20"
                   >
                     <svg
                       className="h-7 w-7 sm:h-8 sm:w-8"
@@ -161,8 +161,8 @@ export function CallInterface() {
                     disabled={status !== "active"}
                     className={`flex h-14 w-14 items-center justify-center rounded-full border transition-all ${
                       isMuted
-                        ? "border-yellow-600 bg-yellow-600/20 text-yellow-400"
-                        : "border-slate-300 bg-white text-slate-600 hover:border-slate-400 hover:text-slate-900"
+                        ? "border-amber-500 bg-amber-500/20 text-amber-600"
+                        : "border-emerald-200 bg-white text-slate-600 hover:border-emerald-400 hover:text-slate-900"
                     } disabled:cursor-not-allowed disabled:opacity-40`}
                   >
                     {isMuted ? (
@@ -179,7 +179,7 @@ export function CallInterface() {
 
                   <button
                     onClick={endCall}
-                    className="flex h-16 w-16 items-center justify-center rounded-full bg-red-600 text-white shadow-lg shadow-red-600/30 transition-all hover:scale-105 hover:bg-red-500 active:scale-95"
+                    className="flex h-16 w-16 items-center justify-center rounded-full bg-rose-600 text-white shadow-lg shadow-rose-600/30 transition-all hover:scale-105 hover:bg-rose-500 active:scale-95"
                   >
                     <svg className="h-6 w-6 rotate-[135deg]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
                       <path
@@ -195,9 +195,9 @@ export function CallInterface() {
           </div>
         </section>
 
-        <aside className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <aside className="rounded-xl border border-emerald-200 bg-white p-4 shadow-sm">
           <div className="mb-3 flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+            <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
             <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
               Live Transcript
             </h2>
@@ -208,7 +208,7 @@ export function CallInterface() {
                 <div key={msg.id} className="flex gap-3">
                   <span
                     className={`mt-0.5 shrink-0 text-xs font-bold uppercase tracking-wider ${
-                      msg.sender === "dispatcher" ? "text-red-600" : "text-blue-600"
+                      msg.sender === "dispatcher" ? "text-emerald-600" : "text-slate-600"
                     }`}
                   >
                     {msg.sender === "dispatcher" ? "DISP" : "YOU"}
