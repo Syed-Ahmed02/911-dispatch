@@ -49,9 +49,60 @@ function QueueTable() {
     <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
       <div className="border-b border-slate-200 px-4 py-3">
         <h2 className="text-xs uppercase tracking-[0.16em] text-slate-700">Current Queue</h2>
+        <div className="mt-3 flex flex-wrap gap-2 md:hidden">
+          <button
+            onClick={() => selectSort("priority")}
+            className="h-8 rounded border border-slate-200 bg-slate-50 px-2 text-[11px] uppercase tracking-[0.12em] text-slate-600 hover:border-slate-300 hover:text-slate-800"
+          >
+            Priority
+          </button>
+          <button
+            onClick={() => selectSort("status")}
+            className="h-8 rounded border border-slate-200 bg-slate-50 px-2 text-[11px] uppercase tracking-[0.12em] text-slate-600 hover:border-slate-300 hover:text-slate-800"
+          >
+            Status
+          </button>
+          <button
+            onClick={() => selectSort("elapsed")}
+            className="h-8 rounded border border-slate-200 bg-slate-50 px-2 text-[11px] uppercase tracking-[0.12em] text-slate-600 hover:border-slate-300 hover:text-slate-800"
+          >
+            Elapsed
+          </button>
+        </div>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="space-y-3 p-3 md:hidden">
+        {rows.map((call) => (
+          <button
+            key={call.id}
+            type="button"
+            onClick={() => selectCall(call.id)}
+            className={`w-full rounded-lg border p-3 text-left transition ${
+              selectedCallId === call.id
+                ? "border-slate-400 bg-slate-100"
+                : "border-slate-200 bg-slate-50 hover:border-slate-300"
+            }`}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium text-slate-900">{call.phoneNumber}</p>
+                <p className="mt-1 text-xs text-slate-500">{call.locationText}</p>
+              </div>
+              <span className={`rounded border px-2 py-1 text-[11px] font-semibold ${priorityTone(call.priority)}`}>
+                {call.priority}
+              </span>
+            </div>
+            <div className="mt-3 flex items-center justify-between text-xs">
+              <span className={`rounded border px-2 py-1 ${statusTone(call.status)}`}>
+                {statusLabel(call.status)}
+              </span>
+              <span className="font-mono text-slate-600">{formatElapsed(call.startedAt, now)}</span>
+            </div>
+          </button>
+        ))}
+      </div>
+
+      <div className="hidden overflow-x-auto md:block">
         <table className="min-w-full text-sm">
           <thead className="text-left text-[11px] uppercase tracking-[0.12em] text-slate-500">
             <tr>
@@ -176,7 +227,7 @@ function DetailPanel() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 border-t border-slate-200 pt-4 text-sm">
+      <div className="grid gap-3 border-t border-slate-200 pt-4 text-sm sm:grid-cols-2">
         <div className="rounded border border-slate-200 bg-slate-50 p-3">
           <p className="text-xs text-slate-500">Urgency Score</p>
           <p className="mt-1 text-lg font-semibold text-slate-900">{call.urgencyScore}</p>
