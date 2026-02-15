@@ -91,8 +91,8 @@ export function CallInterface() {
   const isConnecting = status === "connecting";
 
   return (
-    <div className="grid w-full gap-4 md:gap-6 xl:grid-cols-[minmax(0,1.6fr)_22rem]">
-        {/* Main Card - min-w-0 so it doesn't push the transcript column */}
+    <div className="grid w-full min-w-0 gap-4 md:gap-6 xl:grid-cols-[1.6fr_minmax(20rem,1fr)]">
+        {/* Main Card */}
         <section className="min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
           <div className="border-b border-slate-200 px-4 py-3 text-center md:px-6 md:py-4">
             <h1 className="text-4xl font-black tracking-tight text-slate-900 md:text-5xl">
@@ -196,45 +196,48 @@ export function CallInterface() {
           </div>
         </section>
 
-        {/* Fixed-width transcript panel on xl so layout doesn't shift with content */}
-        <aside className="w-full min-w-0 rounded-xl border border-slate-200 bg-white p-4 shadow-sm xl:w-[22rem] xl:min-w-[22rem] xl:max-w-[22rem] xl:shrink-0">
-          <div className="mb-3 flex items-center gap-2">
+        <aside className="flex min-w-0 w-full flex-col rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="mb-3 flex shrink-0 items-center gap-2">
             <div className="h-2 w-2 shrink-0 rounded-full bg-red-500 animate-pulse" />
             <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
               Live Transcript
             </h2>
           </div>
-          {(transcript.length > 0 || interimTranscript) ? (
-            <div className="max-h-72 min-h-0 min-w-0 space-y-3 overflow-y-auto overflow-x-hidden pr-1 scrollbar-thin sm:max-h-80">
-              {transcript.map((msg) => (
-                <div key={msg.id} className="flex min-w-0 gap-3">
-                  <span
-                    className={`mt-0.5 shrink-0 text-xs font-bold uppercase tracking-wider ${
-                      msg.sender === "dispatcher" ? "text-red-600" : "text-blue-600"
-                    }`}
-                  >
-                    {msg.sender === "dispatcher" ? "DISP" : "YOU"}
-                  </span>
-                  <p className="min-w-0 flex-1 break-words text-sm leading-relaxed text-slate-700">
-                    {msg.text}
-                  </p>
+          <div className="min-h-[18rem] w-full flex-1 min-w-0 rounded-lg bg-slate-50 p-3 sm:min-h-[20rem]">
+            {(transcript.length > 0 || interimTranscript) ? (
+              <div className="flex h-full min-h-0 w-full flex-col overflow-y-auto overflow-x-hidden pr-1 scrollbar-thin">
+                <div className="space-y-3">
+                  {transcript.map((msg) => (
+                    <div key={msg.id} className="flex min-w-0 gap-3">
+                      <span
+                        className={`mt-0.5 shrink-0 text-xs font-bold uppercase tracking-wider ${
+                          msg.sender === "dispatcher" ? "text-red-600" : "text-blue-600"
+                        }`}
+                      >
+                        {msg.sender === "dispatcher" ? "DISP" : "YOU"}
+                      </span>
+                      <p className="min-w-0 flex-1 break-words text-sm leading-relaxed text-slate-700">
+                        {msg.text}
+                      </p>
+                    </div>
+                  ))}
+                  {interimTranscript ? (
+                    <div className="flex min-w-0 gap-3">
+                      <span className="mt-0.5 shrink-0 text-xs font-bold uppercase tracking-wider text-blue-500">
+                        YOU
+                      </span>
+                      <p className="min-w-0 flex-1 break-words text-sm leading-relaxed text-slate-500 italic">
+                        {interimTranscript}
+                      </p>
+                    </div>
+                  ) : null}
                 </div>
-              ))}
-              {interimTranscript ? (
-                <div className="flex min-w-0 gap-3">
-                  <span className="mt-0.5 shrink-0 text-xs font-bold uppercase tracking-wider text-blue-500">
-                    YOU
-                  </span>
-                  <p className="min-w-0 flex-1 break-words text-sm leading-relaxed text-slate-500 italic">
-                    {interimTranscript}
-                  </p>
-                </div>
-              ) : null}
-              <div ref={transcriptEndRef} />
-            </div>
-          ) : (
-            <p className="text-sm text-slate-500">Transcript will appear here once the call starts.</p>
-          )}
+                <div ref={transcriptEndRef} />
+              </div>
+            ) : (
+              <p className="text-sm text-slate-500">Transcript will appear here once the call starts.</p>
+            )}
+          </div>
         </aside>
         <p className="text-center text-xs text-slate-500 xl:col-span-2">
           This is a simulation. For real emergencies, call your local 911.
