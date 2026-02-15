@@ -64,22 +64,27 @@ export function useAtomsCall(): UseAtomsCallReturn {
   const callIdRef = useRef<string | null>(null);
   const lastAddedCallerRef = useRef<string>("");
   const lastAddedAssistantRef = useRef<string>("");
+  const addTranscriptRef = useRef<(sender: "caller" | "dispatcher", text: string) => void>(() => {});
 
   const addTranscript = useCallback(
     (sender: "caller" | "dispatcher", text: string) => {
+      if (!text?.trim()) return;
       messageIdRef.current += 1;
+      const id = messageIdRef.current;
       setTranscript((prev) => [
         ...prev,
-        {
-          id: messageIdRef.current,
-          sender,
-          text,
-          timestamp: Date.now(),
-        },
+        { id, sender, text: text.trim(), timestamp: Date.now() },
       ]);
+      if (typeof window !== "undefined") {
+        console.log("[transcript] added", sender, text.trim().slice(0, 80));
+      }
     },
     []
   );
+
+  useEffect(() => {
+    addTranscriptRef.current = addTranscript;
+  }, [addTranscript]);
 
   // Speech recognition for capturing caller's spoken words
   const {
@@ -89,8 +94,8 @@ export function useAtomsCall(): UseAtomsCallReturn {
     stop: stopSpeechRecognition,
     setSuppressed: setSpeechSuppressed,
   } = useSpeechRecognition({
-    onResult: () => {
-      // Live transcript is driven only by triage JSON (last_caller_message / last_assistant_message)
+    onResult: (text) => {
+      addTranscript("caller", text);
     },
   });
 
@@ -143,9 +148,17 @@ export function useAtomsCall(): UseAtomsCallReturn {
     }
   }, []);
 
-  // Set up Atoms event listeners
+  const pushTriageToServerRef = useRef(pushTriageToServer);
+  useEffect(() => {
+    pushTriageToServerRef.current = pushTriageToServer;
+  }, [pushTriageToServer]);
+
+  // Set up Atoms event listeners (use refs so handlers always call latest callbacks)
   useEffect(() => {
     client.removeAllListeners();
+    if (typeof window !== "undefined") {
+      console.log("[Atoms] listeners registered");
+    }
 
     client.on("session_started", () => {
       setStatus("waiting_for_agent");
@@ -162,9 +175,9 @@ export function useAtomsCall(): UseAtomsCallReturn {
     client.on("agent_connected", () => {
       setStatus("active");
       setStatusMessage("Dispatcher connected");
-      // Start speech recognition only after the WebRTC session is fully
-      // established, so both the Atoms SDK and Web Speech API don't race
-      // for microphone access during connection setup.
+      if (typeof window !== "undefined") {
+        console.log("[Atoms] agent_connected – starting speech recognition");
+      }
       startSpeechRef.current();
     });
 
@@ -187,32 +200,53 @@ export function useAtomsCall(): UseAtomsCallReturn {
       const assistantMsg = typeof triage.last_assistant_message === "string" ? triage.last_assistant_message.trim() : "";
       if (callerMsg && callerMsg !== lastAddedCallerRef.current) {
         lastAddedCallerRef.current = callerMsg;
-        addTranscript("caller", callerMsg);
+        addTranscriptRef.current("caller", callerMsg);
       }
       if (assistantMsg && assistantMsg !== lastAddedAssistantRef.current) {
         lastAddedAssistantRef.current = assistantMsg;
-        addTranscript("dispatcher", assistantMsg);
+        addTranscriptRef.current("dispatcher", assistantMsg);
       }
     };
 
+    const addDispatcherTranscript = (data: Record<string, unknown>) => {
+      let text: string | null = null;
+      if (typeof data.text === "string" && data.text.trim()) text = data.text.trim();
+      else if (typeof data.content === "string" && data.content.trim()) text = data.content.trim();
+      else if (typeof data.message === "string" && data.message.trim()) text = data.message.trim();
+      else if (data.content && typeof data.content === "object" && typeof (data.content as { text?: string }).text === "string") {
+        const t = (data.content as { text: string }).text.trim();
+        if (t) text = t;
+      }
+      if (text) addTranscriptRef.current("dispatcher", text);
+    };
+
+    client.on("transcript", (data: Record<string, unknown>) => {
+      if (typeof window !== "undefined") {
+        console.log("[Atoms] transcript event", data);
+      }
+      addDispatcherTranscript(data);
+    });
+
     client.on("update", (data: Record<string, unknown>) => {
       console.log("[Atoms] update event", data);
+      addDispatcherTranscript(data);
       const triage = extractTriageFromUpdate(data);
       if (triage) {
         console.log("[Atoms] triage extracted from update", triage);
         setTriageState(triage);
-        pushTriageToServer(triage);
+        pushTriageToServerRef.current(triage);
         updateTranscriptFromTriage(triage);
       }
     });
 
     client.on("metadata", (data: Record<string, unknown>) => {
       console.log("[Atoms] metadata event", data);
+      addDispatcherTranscript(data);
       const triage = extractTriageFromUpdate(data);
       if (triage) {
         console.log("[Atoms] triage extracted from metadata", triage);
         setTriageState(triage);
-        pushTriageToServer(triage);
+        pushTriageToServerRef.current(triage);
         updateTranscriptFromTriage(triage);
       }
     });

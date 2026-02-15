@@ -77,7 +77,11 @@ export function DispatchProvider({ children }: { children: ReactNode }) {
   const [selectedCallId, setSelectedCallId] = useState<string | null>(
     INITIAL_CALLS[0]?.id ?? null
   );
-  const [now, setNow] = useState<number>(() => Date.now());
+  const [now, setNow] = useState<number>(0);
+
+  useEffect(() => {
+    setNow(Date.now());
+  }, []);
 
   const allCalls = useMemo(
     () => [...calls, ...liveTriageCalls],
