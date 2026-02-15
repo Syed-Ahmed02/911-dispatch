@@ -90,7 +90,7 @@ export function CallInterface() {
   const isConnecting = status === "connecting";
 
   return (
-    <div className="w-full grid gap-6 xl:grid-cols-[1.6fr_1fr]">
+    <div className="grid w-full gap-4 md:gap-6 xl:grid-cols-[1.6fr_1fr]">
         {/* Main Card */}
         <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
           <div className="border-b border-slate-200 px-4 py-3 text-center md:px-6 md:py-4">
@@ -102,7 +102,7 @@ export function CallInterface() {
             </p>
           </div>
           <div className="space-y-6 p-4 md:p-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <StatusIndicator status={status} />
               <span className="font-mono text-xs text-slate-500">
                 {statusMessage}
@@ -133,27 +133,27 @@ export function CallInterface() {
 
             <div className="flex items-center justify-center gap-4">
               {!isCallActive && !isConnecting ? (
-                <button
-                  onClick={startCall}
-                  className="group relative flex h-20 w-20 items-center justify-center rounded-full bg-red-600 text-white shadow-lg shadow-red-600/30 transition-all hover:scale-105 hover:bg-red-500 hover:shadow-red-500/40 active:scale-95"
-                >
-                  <svg
-                    className="h-8 w-8"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    strokeWidth={2}
+                <div className="flex flex-col items-center gap-2">
+                  <button
+                    onClick={startCall}
+                    className="flex h-16 w-16 items-center justify-center rounded-full bg-red-600 text-white shadow-lg shadow-red-600/30 transition-all hover:scale-105 hover:bg-red-500 hover:shadow-red-500/40 active:scale-95 sm:h-20 sm:w-20"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                    />
-                  </svg>
-                  <span className="absolute -bottom-7 text-xs font-medium text-slate-500 group-hover:text-red-500">
-                    Call 911
-                  </span>
-                </button>
+                    <svg
+                      className="h-7 w-7 sm:h-8 sm:w-8"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                      />
+                    </svg>
+                  </button>
+                  <span className="text-xs font-medium text-slate-500">Call 911</span>
+                </div>
               ) : (
                 <>
                   <button
@@ -203,7 +203,7 @@ export function CallInterface() {
             </h2>
           </div>
           {transcript.length > 0 ? (
-            <div className="max-h-80 space-y-3 overflow-y-auto pr-1 scrollbar-thin">
+            <div className="max-h-72 space-y-3 overflow-y-auto pr-1 scrollbar-thin sm:max-h-80">
               {transcript.map((msg) => (
                 <div key={msg.id} className="flex gap-3">
                   <span
@@ -223,10 +223,10 @@ export function CallInterface() {
           ) : (
             <p className="text-sm text-slate-500">Transcript will appear here once the call starts.</p>
           )}
-          <p className="mt-4 text-center text-xs text-slate-500">
-            This is a simulation. For real emergencies, call your local 911.
-          </p>
         </aside>
+        <p className="text-center text-xs text-slate-500 xl:col-span-2">
+          This is a simulation. For real emergencies, call your local 911.
+        </p>
     </div>
   );
 }
