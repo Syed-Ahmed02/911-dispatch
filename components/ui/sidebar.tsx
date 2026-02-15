@@ -23,7 +23,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { PanelLeftIcon } from "lucide-react"
+import { PanelLeftClose, PanelLeftIcon } from "lucide-react"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -273,6 +273,39 @@ function SidebarTrigger({
     >
       <PanelLeftIcon />
       <span className="sr-only">Toggle Sidebar</span>
+    </Button>
+  )
+}
+
+function SidebarToggle({
+  className,
+  onClick,
+  ...props
+}: React.ComponentProps<typeof Button>) {
+  const { toggleSidebar, state } = useSidebar()
+
+  return (
+    <Button
+      data-sidebar="toggle"
+      data-slot="sidebar-toggle"
+      variant="ghost"
+      size="icon"
+      className={cn(className)}
+      onClick={(event) => {
+        onClick?.(event)
+        toggleSidebar()
+      }}
+      aria-label={state === "expanded" ? "Collapse sidebar" : "Expand sidebar"}
+      {...props}
+    >
+      {state === "expanded" ? (
+        <PanelLeftClose className="size-4" />
+      ) : (
+        <PanelLeftIcon className="size-4" />
+      )}
+      <span className="sr-only">
+        {state === "expanded" ? "Collapse sidebar" : "Expand sidebar"}
+      </span>
     </Button>
   )
 }
@@ -717,6 +750,7 @@ export {
   SidebarProvider,
   SidebarRail,
   SidebarSeparator,
+  SidebarToggle,
   SidebarTrigger,
   useSidebar,
 }
