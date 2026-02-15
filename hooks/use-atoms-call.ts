@@ -19,12 +19,28 @@ export interface TranscriptMessage {
   timestamp: number;
 }
 
+export interface TriageState {
+  location_raw?: string;
+  location_confirmed?: boolean;
+  callback_number?: string;
+  is_emergency?: boolean;
+  category?: string;
+  urgency?: string;
+  suggested_units?: { police?: boolean; fire?: boolean; ems?: boolean };
+  red_flags?: string[];
+  one_sentence_summary?: string;
+  last_caller_message?: string;
+  last_assistant_message?: string;
+  [key: string]: unknown;
+}
+
 export interface UseAtomsCallReturn {
   status: CallStatus;
   statusMessage: string;
   isAgentSpeaking: boolean;
   isMuted: boolean;
   transcript: TranscriptMessage[];
+  triageState: TriageState | null;
   /** The caller's in-progress speech (not yet finalized) */
   interimTranscript: string;
   /** Whether the Web Speech API is supported in this browser */
@@ -42,24 +58,33 @@ export function useAtomsCall(): UseAtomsCallReturn {
   const [isAgentSpeaking, setIsAgentSpeaking] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [transcript, setTranscript] = useState<TranscriptMessage[]>([]);
+  const [triageState, setTriageState] = useState<TriageState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const messageIdRef = useRef(0);
+  const callIdRef = useRef<string | null>(null);
+  const lastAddedCallerRef = useRef<string>("");
+  const lastAddedAssistantRef = useRef<string>("");
+  const addTranscriptRef = useRef<(sender: "caller" | "dispatcher", text: string) => void>(() => {});
 
   const addTranscript = useCallback(
     (sender: "caller" | "dispatcher", text: string) => {
+      if (!text?.trim()) return;
       messageIdRef.current += 1;
+      const id = messageIdRef.current;
       setTranscript((prev) => [
         ...prev,
-        {
-          id: messageIdRef.current,
-          sender,
-          text,
-          timestamp: Date.now(),
-        },
+        { id, sender, text: text.trim(), timestamp: Date.now() },
       ]);
+      if (typeof window !== "undefined") {
+        console.log("[transcript] added", sender, text.trim().slice(0, 80));
+      }
     },
     []
   );
+
+  useEffect(() => {
+    addTranscriptRef.current = addTranscript;
+  }, [addTranscript]);
 
   // Speech recognition for capturing caller's spoken words
   const {
@@ -92,11 +117,48 @@ export function useAtomsCall(): UseAtomsCallReturn {
     setIsAgentSpeaking(false);
     setIsMuted(false);
     setError(null);
+    callIdRef.current = null;
+    lastAddedCallerRef.current = "";
+    lastAddedAssistantRef.current = "";
+    // Keep triageState so UI can still show last extraction after call ends
   }, []);
 
-  // Set up Atoms event listeners
+  const pushTriageToServer = useCallback((state: TriageState) => {
+    const body: { triage_state: TriageState; call_id?: string } = { triage_state: state };
+    if (callIdRef.current) body.call_id = callIdRef.current;
+    fetch("/api/triage", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }).catch((err) => console.warn("[triage] Failed to store on server:", err));
+    if (typeof window !== "undefined") {
+      try {
+        const key = "triageCalls";
+        const raw = window.localStorage.getItem(key);
+        const entries: { callId: string; state: TriageState; at: string }[] = raw ? JSON.parse(raw) : [];
+        const callId = callIdRef.current ?? `legacy-${Date.now()}`;
+        const at = new Date().toISOString();
+        const existing = entries.findIndex((e) => e.callId === callId);
+        const newEntry = { callId, state: { ...state, _at: at }, at };
+        const next = existing >= 0 ? entries.map((e, i) => (i === existing ? newEntry : e)) : [...entries, newEntry].slice(-50);
+        window.localStorage.setItem(key, JSON.stringify(next));
+      } catch {
+        // ignore
+      }
+    }
+  }, []);
+
+  const pushTriageToServerRef = useRef(pushTriageToServer);
+  useEffect(() => {
+    pushTriageToServerRef.current = pushTriageToServer;
+  }, [pushTriageToServer]);
+
+  // Set up Atoms event listeners (use refs so handlers always call latest callbacks)
   useEffect(() => {
     client.removeAllListeners();
+    if (typeof window !== "undefined") {
+      console.log("[Atoms] listeners registered");
+    }
 
     client.on("session_started", () => {
       setStatus("waiting_for_agent");
@@ -113,9 +175,9 @@ export function useAtomsCall(): UseAtomsCallReturn {
     client.on("agent_connected", () => {
       setStatus("active");
       setStatusMessage("Dispatcher connected");
-      // Start speech recognition only after the WebRTC session is fully
-      // established, so both the Atoms SDK and Web Speech API don't race
-      // for microphone access during connection setup.
+      if (typeof window !== "undefined") {
+        console.log("[Atoms] agent_connected – starting speech recognition");
+      }
       startSpeechRef.current();
     });
 
@@ -133,23 +195,59 @@ export function useAtomsCall(): UseAtomsCallReturn {
       setSuppressedRef.current(false);
     });
 
-    client.on(
-      "transcript",
-      (data: { text?: string; topic?: string; type?: string }) => {
-        // The atoms-client-sdk hardcodes topic to "agent_response" for all
-        // transcript events received via the data channel.
-        const text = data.text?.trim();
-        if (text) {
-          addTranscript("dispatcher", text);
-        }
+    const updateTranscriptFromTriage = (triage: TriageState) => {
+      const callerMsg = typeof triage.last_caller_message === "string" ? triage.last_caller_message.trim() : "";
+      const assistantMsg = typeof triage.last_assistant_message === "string" ? triage.last_assistant_message.trim() : "";
+      if (callerMsg && callerMsg !== lastAddedCallerRef.current) {
+        lastAddedCallerRef.current = callerMsg;
+        addTranscriptRef.current("caller", callerMsg);
       }
-    );
+      if (assistantMsg && assistantMsg !== lastAddedAssistantRef.current) {
+        lastAddedAssistantRef.current = assistantMsg;
+        addTranscriptRef.current("dispatcher", assistantMsg);
+      }
+    };
 
-    // Some Atoms server versions send agent text via the "update" event
-    // instead of (or in addition to) "transcript".
+    const addDispatcherTranscript = (data: Record<string, unknown>) => {
+      let text: string | null = null;
+      if (typeof data.text === "string" && data.text.trim()) text = data.text.trim();
+      else if (typeof data.content === "string" && data.content.trim()) text = data.content.trim();
+      else if (typeof data.message === "string" && data.message.trim()) text = data.message.trim();
+      else if (data.content && typeof data.content === "object" && typeof (data.content as { text?: string }).text === "string") {
+        const t = (data.content as { text: string }).text.trim();
+        if (t) text = t;
+      }
+      if (text) addTranscriptRef.current("dispatcher", text);
+    };
+
+    client.on("transcript", (data: Record<string, unknown>) => {
+      if (typeof window !== "undefined") {
+        console.log("[Atoms] transcript event", data);
+      }
+      addDispatcherTranscript(data);
+    });
+
     client.on("update", (data: Record<string, unknown>) => {
-      if (typeof data.text === "string" && data.text.trim()) {
-        addTranscript("dispatcher", data.text.trim());
+      console.log("[Atoms] update event", data);
+      addDispatcherTranscript(data);
+      const triage = extractTriageFromUpdate(data);
+      if (triage) {
+        console.log("[Atoms] triage extracted from update", triage);
+        setTriageState(triage);
+        pushTriageToServerRef.current(triage);
+        updateTranscriptFromTriage(triage);
+      }
+    });
+
+    client.on("metadata", (data: Record<string, unknown>) => {
+      console.log("[Atoms] metadata event", data);
+      addDispatcherTranscript(data);
+      const triage = extractTriageFromUpdate(data);
+      if (triage) {
+        console.log("[Atoms] triage extracted from metadata", triage);
+        setTriageState(triage);
+        pushTriageToServerRef.current(triage);
+        updateTranscriptFromTriage(triage);
       }
     });
 
@@ -181,12 +279,13 @@ export function useAtomsCall(): UseAtomsCallReturn {
     return () => {
       client.removeAllListeners();
     };
-  }, [client, addTranscript]);
+  }, [client, addTranscript, pushTriageToServer]);
 
   const startCall = useCallback(async () => {
     try {
       setError(null);
       setTranscript([]);
+      setTriageState(null);
       setStatus("connecting");
       setStatusMessage("Initiating call...");
 
@@ -202,7 +301,9 @@ export function useAtomsCall(): UseAtomsCallReturn {
         throw new Error(errData.error || "Failed to initiate call");
       }
 
-      const { token, host } = await res.json();
+      const data = await res.json();
+      const { token, host, callId } = data;
+      callIdRef.current = callId ?? null;
 
       setStatusMessage("Connecting to dispatcher...");
 
@@ -247,6 +348,7 @@ export function useAtomsCall(): UseAtomsCallReturn {
     isAgentSpeaking,
     isMuted,
     transcript,
+    triageState,
     interimTranscript,
     isSpeechRecognitionSupported,
     startCall,
@@ -254,4 +356,32 @@ export function useAtomsCall(): UseAtomsCallReturn {
     toggleMute,
     error,
   };
+}
+
+function extractTriageFromUpdate(data: Record<string, unknown>): TriageState | null {
+  if (!data || typeof data !== "object") return null;
+  const raw =
+    data.triage_state ??
+    data.triageState ??
+    data.triage_raw ??
+    (typeof data.triage === "string" ? data.triage : null);
+  if (raw == null) {
+    if (
+      typeof data.location_raw === "string" ||
+      typeof data.category === "string" ||
+      data.is_emergency !== undefined
+    ) {
+      return data as TriageState;
+    }
+    return null;
+  }
+  if (typeof raw === "string") {
+    try {
+      const parsed = JSON.parse(raw) as TriageState;
+      return parsed && typeof parsed === "object" ? parsed : null;
+    } catch {
+      return null;
+    }
+  }
+  return (raw as TriageState) && typeof raw === "object" ? (raw as TriageState) : null;
 }
