@@ -326,7 +326,7 @@ export function OverviewPage() {
         />
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[2fr_1fr]">
+      <section className="w-full grid gap-6 xl:grid-cols-[1.6fr_1fr]">
         <PriorityMap />
         <div className="space-y-6">
           <ChannelPulse />

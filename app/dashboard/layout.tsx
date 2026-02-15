@@ -52,7 +52,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             </Sidebar>
 
             <SidebarInset className="bg-transparent md:peer-data-[variant=inset]:m-0 md:peer-data-[variant=inset]:rounded-none md:peer-data-[variant=inset]:shadow-none">
-              <div className="w-full px-4 py-6 md:px-6 lg:px-8">
+              <div className="mx-auto w-full max-w-[1280px] px-4 py-6 md:px-6 lg:px-8">
                 <header className="mb-6 rounded-2xl border border-slate-300 bg-white/95 p-5 shadow-[0_16px_36px_rgba(15,23,42,.08)] backdrop-blur">
                   <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-200 pb-4">
                     <div className="flex items-start gap-3">
