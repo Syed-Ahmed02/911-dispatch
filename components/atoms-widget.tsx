@@ -3,7 +3,7 @@
 import { createElement } from "react";
 import Script from "next/script";
 
-const ASSISTANT_ID = "698ffa52e177f8cb90f4115b";
+const ASSISTANT_ID = process.env.ATOMS_AGENT_ID;
 const WIDGET_SCRIPT =
   "https://unpkg.com/atoms-widget-core@latest/dist/embed/widget.umd.js";
 

@@ -1,5 +1,5 @@
-import { CallInterface } from "@/components/ui/call-interface";
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return <CallInterface />;
+  redirect("/dashboard");
 }

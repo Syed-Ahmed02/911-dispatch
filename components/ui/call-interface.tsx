@@ -35,9 +35,15 @@ function StatusIndicator({ status }: { status: CallStatus }) {
 }
 
 function WaveformVisualizer({ active }: { active: boolean }) {
+  const bars = Array.from({ length: 24 }).map((_, i) => ({
+    height: `${12 + ((i * 17) % 44)}px`,
+    duration: `${320 + ((i * 53) % 390)}ms`,
+    delay: `${i * 50}ms`,
+  }));
+
   return (
     <div className="flex items-center justify-center gap-1 h-16">
-      {Array.from({ length: 24 }).map((_, i) => (
+      {bars.map((bar, i) => (
         <div
           key={i}
           className={`w-1 rounded-full transition-all duration-150 ${
@@ -48,9 +54,9 @@ function WaveformVisualizer({ active }: { active: boolean }) {
           style={
             active
               ? {
-                  height: `${Math.random() * 48 + 8}px`,
-                  animationDelay: `${i * 50}ms`,
-                  animationDuration: `${300 + Math.random() * 400}ms`,
+                  height: bar.height,
+                  animationDelay: bar.delay,
+                  animationDuration: bar.duration,
                 }
               : undefined
           }
