@@ -27,7 +27,7 @@ function StatusIndicator({ status }: { status: CallStatus }) {
           className={`relative inline-flex h-3 w-3 rounded-full ${color}`}
         />
       </span>
-      <span className="text-sm font-medium uppercase tracking-wider text-neutral-400">
+      <span className="text-sm font-medium uppercase tracking-wider text-slate-500">
         {label}
       </span>
     </div>
@@ -49,7 +49,7 @@ function WaveformVisualizer({ active }: { active: boolean }) {
           className={`w-1 rounded-full transition-all duration-150 ${
             active
               ? "bg-red-500/80 animate-pulse"
-              : "bg-neutral-700 h-2"
+              : "bg-slate-300 h-2"
           }`}
           style={
             active
@@ -90,155 +90,143 @@ export function CallInterface() {
   const isConnecting = status === "connecting";
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-neutral-950 p-4 font-sans">
-      <div className="w-full max-w-md space-y-6">
-        {/* Header */}
-        <div className="text-center">
-          <h1 className="text-5xl font-black tracking-tight text-white">
-            911
-          </h1>
-          <p className="mt-1 text-sm font-medium uppercase tracking-[0.3em] text-neutral-500">
-            Emergency Dispatch
-          </p>
-        </div>
-
+    <div className="grid w-full gap-4 md:gap-6 xl:grid-cols-[1.6fr_1fr]">
         {/* Main Card */}
-        <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-6 shadow-2xl shadow-red-950/10">
-          {/* Status Bar */}
-          <div className="flex items-center justify-between mb-6">
-            <StatusIndicator status={status} />
-            <span className="text-xs text-neutral-500 font-mono">
-              {statusMessage}
-            </span>
+        <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-200 px-4 py-3 text-center md:px-6 md:py-4">
+            <h1 className="text-4xl font-black tracking-tight text-slate-900 md:text-5xl">
+              911
+            </h1>
+            <p className="mt-1 text-sm font-medium uppercase tracking-[0.3em] text-slate-500">
+              Emergency Dispatch
+            </p>
           </div>
+          <div className="space-y-6 p-4 md:p-6">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <StatusIndicator status={status} />
+              <span className="font-mono text-xs text-slate-500">
+                {statusMessage}
+              </span>
+            </div>
 
-          {/* Waveform / Visual */}
-          <div className="mb-6 rounded-xl border border-neutral-800 bg-neutral-950 p-4">
-            {isCallActive || isConnecting ? (
-              <WaveformVisualizer active={isAgentSpeaking} />
-            ) : (
-              <div className="flex h-16 items-center justify-center">
-                <p className="text-sm text-neutral-600">
-                  {status === "idle"
-                    ? "Press the button below to call"
-                    : status === "ended"
-                    ? "Call has ended"
-                    : "An error occurred"}
-                </p>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              {isCallActive || isConnecting ? (
+                <WaveformVisualizer active={isAgentSpeaking} />
+              ) : (
+                <div className="flex h-16 items-center justify-center">
+                  <p className="text-sm text-slate-500">
+                    {status === "idle"
+                      ? "Press the button below to call"
+                      : status === "ended"
+                      ? "Call has ended"
+                      : "An error occurred"}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {error && (
+              <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+                <p className="text-sm text-red-700">{error}</p>
               </div>
             )}
-          </div>
 
-          {/* Error Display */}
-          {error && (
-            <div className="mb-4 rounded-lg border border-red-900/50 bg-red-950/30 p-3">
-              <p className="text-sm text-red-400">{error}</p>
-            </div>
-          )}
-
-          {/* Call Controls */}
-          <div className="flex items-center justify-center gap-4">
-            {!isCallActive && !isConnecting ? (
-              <button
-                onClick={startCall}
-                className="group relative flex h-20 w-20 items-center justify-center rounded-full bg-red-600 text-white shadow-lg shadow-red-600/30 transition-all hover:bg-red-500 hover:shadow-red-500/40 hover:scale-105 active:scale-95"
-              >
-                {/* Phone icon */}
-                <svg
-                  className="h-8 w-8"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                  />
-                </svg>
-                <span className="absolute -bottom-7 text-xs font-medium text-neutral-400 group-hover:text-red-400">
-                  Call 911
-                </span>
-              </button>
-            ) : (
-              <>
-                {/* Mute Button */}
-                <button
-                  onClick={toggleMute}
-                  disabled={status !== "active"}
-                  className={`flex h-14 w-14 items-center justify-center rounded-full border transition-all ${
-                    isMuted
-                      ? "border-yellow-600 bg-yellow-600/20 text-yellow-400"
-                      : "border-neutral-700 bg-neutral-800 text-neutral-300 hover:border-neutral-600 hover:text-white"
-                  } disabled:opacity-40 disabled:cursor-not-allowed`}
-                >
-                  {isMuted ? (
-                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+            <div className="flex items-center justify-center gap-4">
+              {!isCallActive && !isConnecting ? (
+                <div className="flex flex-col items-center gap-2">
+                  <button
+                    onClick={startCall}
+                    className="flex h-16 w-16 items-center justify-center rounded-full bg-red-600 text-white shadow-lg shadow-red-600/30 transition-all hover:scale-105 hover:bg-red-500 hover:shadow-red-500/40 active:scale-95 sm:h-20 sm:w-20"
+                  >
+                    <svg
+                      className="h-7 w-7 sm:h-8 sm:w-8"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                      />
                     </svg>
-                  ) : (
-                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                  </button>
+                  <span className="text-xs font-medium text-slate-500">Call 911</span>
+                </div>
+              ) : (
+                <>
+                  <button
+                    onClick={toggleMute}
+                    disabled={status !== "active"}
+                    className={`flex h-14 w-14 items-center justify-center rounded-full border transition-all ${
+                      isMuted
+                        ? "border-yellow-600 bg-yellow-600/20 text-yellow-400"
+                        : "border-slate-300 bg-white text-slate-600 hover:border-slate-400 hover:text-slate-900"
+                    } disabled:cursor-not-allowed disabled:opacity-40`}
+                  >
+                    {isMuted ? (
+                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                      </svg>
+                    ) : (
+                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                      </svg>
+                    )}
+                  </button>
+
+                  <button
+                    onClick={endCall}
+                    className="flex h-16 w-16 items-center justify-center rounded-full bg-red-600 text-white shadow-lg shadow-red-600/30 transition-all hover:scale-105 hover:bg-red-500 active:scale-95"
+                  >
+                    <svg className="h-6 w-6 rotate-[135deg]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+                      />
                     </svg>
-                  )}
-                </button>
-
-                {/* End Call Button */}
-                <button
-                  onClick={endCall}
-                  className="flex h-16 w-16 items-center justify-center rounded-full bg-red-600 text-white shadow-lg shadow-red-600/30 transition-all hover:bg-red-500 hover:scale-105 active:scale-95"
-                >
-                  <svg className="h-6 w-6 rotate-[135deg]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
-                    />
-                  </svg>
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Live Transcript */}
-        {transcript.length > 0 && (
-          <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-4 shadow-2xl">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-neutral-400">
-                Live Transcript
-              </h2>
+                  </button>
+                </>
+              )}
             </div>
-            <div className="max-h-64 overflow-y-auto space-y-3 pr-1 scrollbar-thin">
+          </div>
+        </section>
+
+        <aside className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="mb-3 flex items-center gap-2">
+            <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              Live Transcript
+            </h2>
+          </div>
+          {transcript.length > 0 ? (
+            <div className="max-h-72 space-y-3 overflow-y-auto pr-1 scrollbar-thin sm:max-h-80">
               {transcript.map((msg) => (
                 <div key={msg.id} className="flex gap-3">
                   <span
                     className={`mt-0.5 shrink-0 text-xs font-bold uppercase tracking-wider ${
-                      msg.sender === "dispatcher"
-                        ? "text-red-400"
-                        : "text-blue-400"
+                      msg.sender === "dispatcher" ? "text-red-600" : "text-blue-600"
                     }`}
                   >
                     {msg.sender === "dispatcher" ? "DISP" : "YOU"}
                   </span>
-                  <p className="text-sm leading-relaxed text-neutral-300">
+                  <p className="text-sm leading-relaxed text-slate-700">
                     {msg.text}
                   </p>
                 </div>
               ))}
               <div ref={transcriptEndRef} />
             </div>
-          </div>
-        )}
-
-        {/* Footer */}
-        <p className="text-center text-xs text-neutral-600">
+          ) : (
+            <p className="text-sm text-slate-500">Transcript will appear here once the call starts.</p>
+          )}
+        </aside>
+        <p className="text-center text-xs text-slate-500 xl:col-span-2">
           This is a simulation. For real emergencies, call your local 911.
         </p>
-      </div>
     </div>
   );
 }

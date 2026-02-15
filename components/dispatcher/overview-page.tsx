@@ -97,13 +97,13 @@ function PriorityMap() {
   };
 
   return (
-    <section className="overflow-hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+    <section className="flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="mb-4 flex items-center justify-between border-b border-slate-200 pb-3">
         <h2 className="text-xs uppercase tracking-[0.16em] text-slate-700">Incident Heat Map</h2>
         <span className="text-xs text-slate-500">Priority Markers</span>
       </div>
 
-      <div className="h-[22rem] overflow-hidden rounded-lg border border-slate-200">
+      <div className="min-h-[22rem] overflow-hidden rounded-lg border border-slate-200 xl:flex-1">
         <Map
           ref={mapRef}
           theme="light"
@@ -326,7 +326,7 @@ export function OverviewPage() {
         />
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[2fr_1fr]">
+      <section className="w-full grid gap-6 xl:grid-cols-[1.6fr_1fr]">
         <PriorityMap />
         <div className="space-y-6">
           <ChannelPulse />
