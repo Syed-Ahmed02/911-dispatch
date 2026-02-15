@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   getLatestTriageState,
   saveTriageState,
+  saveTriageStateByCallId,
   type StoredTriageState,
 } from "./store";
 
@@ -18,7 +19,7 @@ export async function GET() {
 
 /**
  * POST /api/triage – store triage state (e.g. from client when SDK emits "update").
- * Body: triage_state object or { triage_state: "<json string>" }.
+ * Body: triage_state object or { triage_state: "<json string>" }, optional call_id.
  */
 export async function POST(request: NextRequest) {
   try {
@@ -40,10 +41,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    saveTriageState({
-      ...state,
-      _source: state._source ?? "client",
-    });
+    const withSource = { ...state, _source: state._source ?? "client" };
+    const callId = body.call_id ?? body.callId ?? null;
+
+    if (callId && typeof callId === "string") {
+      saveTriageStateByCallId(callId, withSource);
+    } else {
+      saveTriageState(withSource);
+    }
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error("[triage POST] Error:", e);

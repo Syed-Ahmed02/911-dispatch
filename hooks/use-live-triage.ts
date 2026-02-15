@@ -4,9 +4,10 @@ import { useEffect, useState } from "react";
 import type { DispatchCall } from "@/components/dispatcher/types";
 import type { StoredTriageEntry } from "@/app/api/triage/store";
 
-const POLL_INTERVAL_MS = 3000;
+const POLL_INTERVAL_MS = 2000;
 const DEFAULT_LAT = 43.4712;
 const DEFAULT_LNG = -80.5324;
+const LOCAL_STORAGE_KEY = "triageCalls";
 
 function mapCategory(category: string | undefined): "Medical" | "Fire" | "Police" {
   const c = (category ?? "").toUpperCase();
@@ -46,6 +47,32 @@ function triageEntryToDispatchCall(entry: StoredTriageEntry): DispatchCall {
   };
 }
 
+function getLocalTriageEntries(): StoredTriageEntry[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as { callId: string; state: StoredTriageEntry["state"]; at: string }[];
+    return Array.isArray(parsed)
+      ? parsed.map((e) => ({ callId: e.callId, state: e.state, at: e.at }))
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function mergeTriageEntries(apiEntries: StoredTriageEntry[], localEntries: StoredTriageEntry[]): StoredTriageEntry[] {
+  const byCallId = new Map<string, StoredTriageEntry>();
+  for (const e of apiEntries) byCallId.set(e.callId, e);
+  for (const e of localEntries) {
+    const existing = byCallId.get(e.callId);
+    if (!existing || new Date(e.at) > new Date(existing.at)) byCallId.set(e.callId, e);
+  }
+  return Array.from(byCallId.values()).sort(
+    (a, b) => new Date(b.at).getTime() - new Date(a.at).getTime()
+  );
+}
+
 export function useLiveTriageCalls(): DispatchCall[] {
   const [calls, setCalls] = useState<DispatchCall[]>([]);
 
@@ -55,13 +82,13 @@ export function useLiveTriageCalls(): DispatchCall[] {
     const fetchCalls = async () => {
       try {
         const res = await fetch("/api/triage/calls");
-        if (!res.ok || cancelled) return;
-        const data = await res.json();
-        const entries: StoredTriageEntry[] = data.calls ?? [];
+        const apiEntries: StoredTriageEntry[] = res.ok ? ((await res.json()).calls ?? []) : [];
+        const localEntries = getLocalTriageEntries();
+        const merged = mergeTriageEntries(apiEntries, localEntries);
         if (cancelled) return;
-        setCalls(entries.map(triageEntryToDispatchCall));
+        setCalls(merged.map(triageEntryToDispatchCall));
       } catch {
-        // ignore
+        if (!cancelled) setCalls(getLocalTriageEntries().map((e) => triageEntryToDispatchCall(e)));
       }
     };
 

@@ -61,6 +61,9 @@ export function useAtomsCall(): UseAtomsCallReturn {
   const [triageState, setTriageState] = useState<TriageState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const messageIdRef = useRef(0);
+  const callIdRef = useRef<string | null>(null);
+  const lastAddedCallerRef = useRef<string>("");
+  const lastAddedAssistantRef = useRef<string>("");
 
   const addTranscript = useCallback(
     (sender: "caller" | "dispatcher", text: string) => {
@@ -86,8 +89,8 @@ export function useAtomsCall(): UseAtomsCallReturn {
     stop: stopSpeechRecognition,
     setSuppressed: setSpeechSuppressed,
   } = useSpeechRecognition({
-    onResult: (text) => {
-      addTranscript("caller", text);
+    onResult: () => {
+      // Live transcript is driven only by triage JSON (last_caller_message / last_assistant_message)
     },
   });
 
@@ -109,15 +112,35 @@ export function useAtomsCall(): UseAtomsCallReturn {
     setIsAgentSpeaking(false);
     setIsMuted(false);
     setError(null);
+    callIdRef.current = null;
+    lastAddedCallerRef.current = "";
+    lastAddedAssistantRef.current = "";
     // Keep triageState so UI can still show last extraction after call ends
   }, []);
 
   const pushTriageToServer = useCallback((state: TriageState) => {
+    const body: { triage_state: TriageState; call_id?: string } = { triage_state: state };
+    if (callIdRef.current) body.call_id = callIdRef.current;
     fetch("/api/triage", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ triage_state: state }),
+      body: JSON.stringify(body),
     }).catch((err) => console.warn("[triage] Failed to store on server:", err));
+    if (typeof window !== "undefined") {
+      try {
+        const key = "triageCalls";
+        const raw = window.localStorage.getItem(key);
+        const entries: { callId: string; state: TriageState; at: string }[] = raw ? JSON.parse(raw) : [];
+        const callId = callIdRef.current ?? `legacy-${Date.now()}`;
+        const at = new Date().toISOString();
+        const existing = entries.findIndex((e) => e.callId === callId);
+        const newEntry = { callId, state: { ...state, _at: at }, at };
+        const next = existing >= 0 ? entries.map((e, i) => (i === existing ? newEntry : e)) : [...entries, newEntry].slice(-50);
+        window.localStorage.setItem(key, JSON.stringify(next));
+      } catch {
+        // ignore
+      }
+    }
   }, []);
 
   // Set up Atoms event listeners
@@ -159,39 +182,38 @@ export function useAtomsCall(): UseAtomsCallReturn {
       setSuppressedRef.current(false);
     });
 
-    client.on(
-      "transcript",
-      (data: { text?: string; topic?: string; type?: string }) => {
-        // The atoms-client-sdk hardcodes topic to "agent_response" for all
-        // transcript events received via the data channel.
-        const text = data.text?.trim();
-        if (text) {
-          addTranscript("dispatcher", text);
-        }
+    const updateTranscriptFromTriage = (triage: TriageState) => {
+      const callerMsg = typeof triage.last_caller_message === "string" ? triage.last_caller_message.trim() : "";
+      const assistantMsg = typeof triage.last_assistant_message === "string" ? triage.last_assistant_message.trim() : "";
+      if (callerMsg && callerMsg !== lastAddedCallerRef.current) {
+        lastAddedCallerRef.current = callerMsg;
+        addTranscript("caller", callerMsg);
       }
-    );
-
-    // Some Atoms server versions send agent text via the "update" event
-    // instead of (or in addition to) "transcript".
-    client.on("update", (data: Record<string, unknown>) => {
-      if (typeof data.text === "string" && data.text.trim()) {
-        addTranscript("dispatcher", data.text.trim());
+      if (assistantMsg && assistantMsg !== lastAddedAssistantRef.current) {
+        lastAddedAssistantRef.current = assistantMsg;
+        addTranscript("dispatcher", assistantMsg);
       }
-    });
+    };
 
     client.on("update", (data: Record<string, unknown>) => {
+      console.log("[Atoms] update event", data);
       const triage = extractTriageFromUpdate(data);
       if (triage) {
+        console.log("[Atoms] triage extracted from update", triage);
         setTriageState(triage);
         pushTriageToServer(triage);
+        updateTranscriptFromTriage(triage);
       }
     });
 
     client.on("metadata", (data: Record<string, unknown>) => {
+      console.log("[Atoms] metadata event", data);
       const triage = extractTriageFromUpdate(data);
       if (triage) {
+        console.log("[Atoms] triage extracted from metadata", triage);
         setTriageState(triage);
         pushTriageToServer(triage);
+        updateTranscriptFromTriage(triage);
       }
     });
 
@@ -245,7 +267,9 @@ export function useAtomsCall(): UseAtomsCallReturn {
         throw new Error(errData.error || "Failed to initiate call");
       }
 
-      const { token, host } = await res.json();
+      const data = await res.json();
+      const { token, host, callId } = data;
+      callIdRef.current = callId ?? null;
 
       setStatusMessage("Connecting to dispatcher...");
 
