@@ -25,20 +25,50 @@ export async function POST(request: NextRequest) {
     }
 
     // Call Atoms API to create a webcall session
-    const response = await fetch(`${ATOMS_API_BASE}/conversation/webcall`, {
+    const requestBody = { agentId };
+    const requestUrl = `${ATOMS_API_BASE}/conversation/webcall`;
+    console.log("[call] Requesting webcall", {
+      url: requestUrl,
+      agentId,
+      hasKey: !!apiKey,
+      keyPrefix: apiKey?.slice(0, 7) ?? "(none)",
+    });
+
+    const response = await fetch(requestUrl, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ agentId }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
       const errorData = await response.text();
-      console.error("Atoms API error:", response.status, errorData);
+      console.error("Atoms API error:", response.status, errorData, {
+        agentId,
+        requestUrl,
+        keyPrefix: apiKey?.slice(0, 10),
+      });
+      let message = response.statusText;
+      try {
+        const parsed = JSON.parse(errorData) as {
+          message?: string;
+          error?: string;
+          msg?: string;
+          errors?: string[];
+        };
+        message =
+          parsed.errors?.[0] ??
+          parsed.message ??
+          parsed.error ??
+          parsed.msg ??
+          message;
+      } catch {
+        if (errorData && errorData.length < 200) message = errorData;
+      }
       return NextResponse.json(
-        { error: `Failed to create webcall session: ${response.statusText}` },
+        { error: `Failed to create webcall session: ${message}` },
         { status: response.status }
       );
     }

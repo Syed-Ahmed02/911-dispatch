@@ -68,10 +68,10 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                           City Ops Grid
                         </p>
                         <h2 className="mt-1 text-2xl tracking-[0.08em] text-slate-900 md:text-3xl">
-                          911 Dispatch Center
+                          911 Dispatch
                         </h2>
                         <p className="mt-1 text-sm text-slate-500">
-                          AI Voice Operations Dashboard
+                          AI Voice Operations
                         </p>
                       </div>
                     </div>
