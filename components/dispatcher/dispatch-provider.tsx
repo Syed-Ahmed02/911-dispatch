@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useLiveTriageCalls } from "@/hooks/use-live-triage";
 import { INITIAL_CALLS, priorityWeight, randomLiveLine } from "./mock-data";
 import type { CallStatus, DispatchCall, EmergencyType, TranscriptLine } from "./types";
 
@@ -71,11 +72,17 @@ function byType(calls: DispatchCall[], type: EmergencyType): number {
 }
 
 export function DispatchProvider({ children }: { children: ReactNode }) {
+  const liveTriageCalls = useLiveTriageCalls();
   const [calls, setCalls] = useState<DispatchCall[]>(INITIAL_CALLS);
   const [selectedCallId, setSelectedCallId] = useState<string | null>(
     INITIAL_CALLS[0]?.id ?? null
   );
   const [now, setNow] = useState<number>(() => Date.now());
+
+  const allCalls = useMemo(
+    () => [...calls, ...liveTriageCalls],
+    [calls, liveTriageCalls]
+  );
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -123,12 +130,12 @@ export function DispatchProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const metrics = useMemo<DashboardMetrics>(() => {
-    const totalCallsToday = calls.length;
-    const ongoingCalls = calls.filter((call) => call.status === "ongoing").length;
-    const dispatchSent = calls.filter((call) => call.status === "dispatch_sent").length;
-    const resolvedCalls = calls.filter((call) => call.status === "resolved").length;
+    const totalCallsToday = allCalls.length;
+    const ongoingCalls = allCalls.filter((call) => call.status === "ongoing").length;
+    const dispatchSent = allCalls.filter((call) => call.status === "dispatch_sent").length;
+    const resolvedCalls = allCalls.filter((call) => call.status === "resolved").length;
 
-    const sentCalls = calls.filter((call) => call.dispatchSentAt && call.startedAt);
+    const sentCalls = allCalls.filter((call) => call.dispatchSentAt && call.startedAt);
     const avgTimeToDispatchMins =
       sentCalls.length === 0
         ? 0
@@ -139,7 +146,7 @@ export function DispatchProvider({ children }: { children: ReactNode }) {
             }, 0) / sentCalls.length
           );
 
-    const highPriorityCount = calls.filter(
+    const highPriorityCount = allCalls.filter(
       (call) => call.priority === "P1" || call.priority === "P2"
     ).length;
 
@@ -151,18 +158,18 @@ export function DispatchProvider({ children }: { children: ReactNode }) {
       avgTimeToDispatchMins,
       highPriorityCount,
     };
-  }, [calls]);
+  }, [allCalls]);
 
   const callsByType = useMemo<CallsByType>(
     () => ({
-      Medical: byType(calls, "Medical"),
-      Fire: byType(calls, "Fire"),
-      Police: byType(calls, "Police"),
+      Medical: byType(allCalls, "Medical"),
+      Fire: byType(allCalls, "Fire"),
+      Police: byType(allCalls, "Police"),
     }),
-    [calls]
+    [allCalls]
   );
 
-  const callsByHour = useMemo(() => buildHourlySeries(calls), [calls]);
+  const callsByHour = useMemo(() => buildHourlySeries(allCalls), [allCalls]);
 
   const selectCall = (callId: string) => {
     setSelectedCallId(callId);
@@ -217,7 +224,7 @@ export function DispatchProvider({ children }: { children: ReactNode }) {
 
   const value: DispatchContextValue = {
     now,
-    calls,
+    calls: allCalls,
     selectedCallId,
     metrics,
     callsByType,
