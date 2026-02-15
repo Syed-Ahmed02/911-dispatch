@@ -3,6 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Activity, PhoneCall, Radio } from "lucide-react";
+import {
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
 
 const tabs = [
   { href: "/dashboard", label: "Overview", icon: Activity },
@@ -13,27 +18,37 @@ const tabs = [
 export function DashboardNav() {
   const pathname = usePathname();
 
+  const isActiveRoute = (href: string) => {
+    if (href === "/dashboard") {
+      return pathname === href;
+    }
+
+    return pathname.startsWith(href);
+  };
+
   return (
-    <nav className="grid gap-2 sm:grid-cols-3">
+    <SidebarMenu>
       {tabs.map((tab) => {
-        const active = pathname === tab.href;
+        const active = isActiveRoute(tab.href);
         const Icon = tab.icon;
 
         return (
-          <Link
-            key={tab.href}
-            href={tab.href}
-            className={`inline-flex h-12 items-center justify-center gap-2 rounded-lg border px-4 text-sm tracking-wide transition ${
-              active
-                ? "border-slate-400 bg-slate-200 text-slate-900"
-                : "border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-400 hover:text-slate-900"
-            }`}
-          >
-            <Icon className="h-4 w-4" />
-            {tab.label}
-          </Link>
+          <SidebarMenuItem key={tab.href}>
+            <SidebarMenuButton
+              isActive={active}
+              render={<Link href={tab.href} />}
+              className={`h-10 rounded-md border text-sm tracking-wide ${
+                active
+                  ? "border-slate-400 bg-slate-200 text-slate-900"
+                  : "border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-400 hover:text-slate-900"
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              <span>{tab.label}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
         );
       })}
-    </nav>
+    </SidebarMenu>
   );
 }
